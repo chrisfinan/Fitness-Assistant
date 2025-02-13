@@ -13,10 +13,6 @@ from sqlalchemy import (
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from schemas.shuttle import ShuttleDirectionEnum
-from schemas.trip import TripTypeEnum, TripStatusEnum
-from schemas.user import UserTypeEnum
-
 Base = declarative_base()
 
 

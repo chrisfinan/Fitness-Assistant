@@ -1,7 +1,7 @@
-DB_PASS = "password"
+DB_PASS = "TheLine76$"
 DB_USER = "postgres"
-DB_NAME = "sjuapp"
-DB_HOST = "129.68.189.129"
+DB_NAME = "Fitness_AssistantDB"
+DB_HOST = "localhost"
 
 # start fastapi server:
 # uvicorn app.main:app --host 129.68.189.140 --port 8000
