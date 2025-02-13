@@ -15,74 +15,48 @@ from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
-
-class Trip(Base):
-    __tablename__ = "trips"
-    id = Column(Integer, primary_key=True, index=True)
-    trip_type = Column(Enum(TripTypeEnum, name="trip_type"))
-    date_requested = Column(DateTime)
-    start_location_latitude = Column(Double)
-    start_location_longitude = Column(Double)
-    end_location_latitude = Column(Double)
-    end_location_longitude = Column(Double)
-    driver = Column(Integer, nullable=True)
-    trip_status = Column(Enum(TripStatusEnum, name="trip_status"))
-    passengers = Column(ARRAY(Integer))
-
+class Exercises(Base):
+    __tablename__ = "functionalfitnessdatabase"
+    exercise_id = Column(Integer, primary_key=True, index=True)
+    exercise = Column(String)
+    short_youtube_demonstration = Column(String, name="Short Youtube Demonstration")
+    indepth_youtube_explanation = Column(String, name="InDepth Youtube Explanation")
+    difficulty_level = Column(String, name="Difficulty Level")
+    target_muscle_group = Column(String, name="Target Muscle Group")
+    prime_mover_muscle = Column(String, name="Prime Mover Muscle")
+    secondary_muscle = Column(String, name="Secondary Muscle")
+    tertiary_muscle = Column(String, name="Tertiary Muscle")
+    primary_equipment = Column(String, name="Primary Equipment")
+    secondary_equipment = Column(String, name="Secondary Equipment")
+    body_region = Column(String, name="Body Region")
+    force_type = Column(String, name="Force Type")
+    mechanics = Column(String)
+    primary_exercise_classification = Column(String, name="Primary Exercise Classification")
+    setsxreps = Column(String)
 
 class User(Base):
     __tablename__ = "users"
-    id = Column(Integer, primary_key=True, index=True)
-    user_type = Column(Enum(UserTypeEnum, name="user_type"))
+    user_id = Column(Integer, primary_key=True, index=True)
+    username = Column(String)
+    password = Column(String)
     first_name = Column(String)
     last_name = Column(String)
-    date_registered = Column(DateTime)
     email_address = Column(String)
     phone_number = Column(String)
-    driver = relationship("Driver", back_populates="user")
-    sju_id = Column(String)
-    password = Column(String)
-    authenticated = Column(Boolean)
 
+class UserInformation(Base):
+    __tablename__ = "information"
+    user_id = Column(Integer, ForeignKey('User.user_id', ondelete='CASCADE'), nullable=False)
+    user = relationship('User', backred='users')
+    weight_goal = Column(String)
+    results = Column(String)
+    time = Column(String)
+    days = Column(Integer)
+    level = Column(String)
 
-class CampusLocation(Base):
-    __tablename__ = "campus_locations"
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String)
-    latitude = Column(Float)
-    longitude = Column(Float)
-    campus = Column(String)
-
-
-class Vehicle(Base):
-    __tablename__ = "vehicles"
-    id = Column(Integer, primary_key=True, index=True)
-    make = Column(String)
-    model = Column(String)
-    year = Column(String)
-    color = Column(String)
-    seatsAvailable = Column(Integer)
-    licensePlate = Column(String)
-
-
-class Shuttle(Base):
-    __tablename__ = "shuttles"
-    id = Column(Integer, primary_key=True, index=True)
-    shuttle_direction = Column(Enum(ShuttleDirectionEnum, name="shuttle_direction"))
-    arrival_time = Column(DateTime)
-    departure_time = Column(DateTime)
-    current_location_latitude = Column(Float)
-    current_location_longitude = Column(Float)
-    shuttle_type = Column(String)  # type of vehicle
-    shuttle_status = Column(String)
-
-
-class Driver(Base):
-    __tablename__ = "drivers"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
-    available = Column(Boolean)
-    current_trip = Column(Integer)
-    current_location_latitude = Column(Float)
-    current_location_longitude = Column(Float)
-    user = relationship("User", back_populates="driver")
+class Choices(Base):
+    __tablename__ = "choose"
+    user_id = Column(Integer, ForeignKey('User.user_id', ondelete='CASCADE'), nullable=False)
+    user = relationship('User', backred='users')
+    exercise_id = Column(Integer, ForeignKey('Exercises.exercises_id', ondelete='CASCADE'), nullable=False)
+    exercise = relationship('Exercises', backred='functionalfitnessdatabase')
