@@ -1,4 +1,4 @@
-DB_PASS = "TheLine76$"
+DB_PASS = "TheLine78$"
 DB_USER = "postgres"
 DB_NAME = "Fitness_AssistantDB"
 DB_HOST = "localhost"
