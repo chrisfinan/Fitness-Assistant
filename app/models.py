@@ -15,9 +15,9 @@ from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
-class Exercises(Base):
+class Exercise(Base):
     __tablename__ = "functionalfitnessdatabase"
-    exercise_id = Column(Integer, primary_key=True, index=True)
+    eid = Column(Integer, primary_key=True, index=True)
     exercise = Column(String)
     short_youtube_demonstration = Column(String, name="Short Youtube Demonstration")
     indepth_youtube_explanation = Column(String, name="InDepth Youtube Explanation")
@@ -36,7 +36,7 @@ class Exercises(Base):
 
 class User(Base):
     __tablename__ = "users"
-    user_id = Column(Integer, primary_key=True, index=True)
+    uid: int = Column(Integer, primary_key=True, index=True)
     username = Column(String)
     password = Column(String)
     first_name = Column(String)
@@ -46,7 +46,7 @@ class User(Base):
 
 class UserInformation(Base):
     __tablename__ = "information"
-    user_id = Column(Integer, ForeignKey('User.user_id', ondelete='CASCADE'), nullable=False)
+    uid = Column(Integer, ForeignKey('User.user_id', ondelete='CASCADE'), nullable=False)
     user = relationship('User', backred='users')
     weight_goal = Column(String)
     results = Column(String)
@@ -56,7 +56,7 @@ class UserInformation(Base):
 
 class Choices(Base):
     __tablename__ = "choose"
-    user_id = Column(Integer, ForeignKey('User.user_id', ondelete='CASCADE'), nullable=False)
+    uid = Column(Integer, ForeignKey('User.user_id', ondelete='CASCADE'), nullable=False)
     user = relationship('User', backred='users')
-    exercise_id = Column(Integer, ForeignKey('Exercises.exercises_id', ondelete='CASCADE'), nullable=False)
+    eid = Column(Integer, ForeignKey('Exercises.exercises_id', ondelete='CASCADE'), nullable=False)
     exercise = relationship('Exercises', backred='functionalfitnessdatabase')
