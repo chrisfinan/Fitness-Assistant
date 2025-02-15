@@ -1,5 +1,5 @@
 CREATE TABLE Users(
-   user_ID                           INTEGER  NOT NULL PRIMARY KEY 
+   user_ID                           SERIAL  NOT NULL PRIMARY KEY
   ,username                          VARCHAR(255)
   ,password                          VARCHAR(255)
 );

@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.global_vars import DB_PASS, DB_USER, DB_NAME, DB_HOST
 from fastapi import FastAPI, HTTPException, Depends, APIRouter
-from app.models import Base, User, Exercises
+from app.models import Base, User
 from schemas.user import UserResponse, UserCreate, UserUpdate
 
 # Define your connection string
@@ -31,7 +31,7 @@ def get_db():
 @router.get("/{uid}", response_model=UserResponse)
 async def get_user_by_uid(uid: int, db: Session = Depends(get_db)):
     users = db.query(User).filter(User.uid == uid)
-    return users
+    return UserResponse.from_orm(users)
 
 @router.get("", response_model=list[UserResponse])
 async def list_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
@@ -52,7 +52,7 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return new_user
+    return UserResponse.from_orm(new_user)
 
 @router.delete("/{uid}", response_model=str)
 async def delete_user(uid: int, db: Session = Depends(get_db)):

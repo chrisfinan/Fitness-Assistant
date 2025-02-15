@@ -12,6 +12,7 @@ class UserResponse(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+        orm_mode = True
 
 class UserCreate(BaseModel):
     username: str
@@ -28,3 +29,7 @@ class UserUpdate(BaseModel):
     last_name: str
     email_address: str
     phone_number: str
+
+# Enable ORM compatibility
+    class Config:
+        orm_mode = True

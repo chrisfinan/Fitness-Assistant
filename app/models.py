@@ -17,10 +17,10 @@ Base = declarative_base()
 
 class Exercise(Base):
     __tablename__ = "functionalfitnessdatabase"
-    eid = Column(Integer, primary_key=True, index=True)
+    eid = Column(Integer, primary_key=True, index=True, autoincrement=True)
     exercise = Column(String)
-    short_youtube_demonstration = Column(String, name="Short Youtube Demonstration")
-    indepth_youtube_explanation = Column(String, name="InDepth Youtube Explanation")
+    short_youtube_demonstration = Column(String, name="Short YouTube Demonstration")
+    indepth_youtube_explanation = Column(String, name="InDepth YouTube Explanation")
     difficulty_level = Column(String, name="Difficulty Level")
     target_muscle_group = Column(String, name="Target Muscle Group")
     prime_mover_muscle = Column(String, name="Prime Mover Muscle")
@@ -36,7 +36,7 @@ class Exercise(Base):
 
 class User(Base):
     __tablename__ = "users"
-    uid: int = Column(Integer, primary_key=True, index=True)
+    uid: int = Column(Integer, primary_key=True, index=True, autoincrement=True)
     username = Column(String)
     password = Column(String)
     first_name = Column(String)
@@ -46,17 +46,17 @@ class User(Base):
 
 class UserInformation(Base):
     __tablename__ = "information"
-    uid = Column(Integer, ForeignKey('User.user_id', ondelete='CASCADE'), nullable=False)
-    user = relationship('User', backred='users')
+    uid = Column(Integer, ForeignKey('users.uid', ondelete='CASCADE'), primary_key=True)
+    user = relationship('User', backref='users', foreign_keys=[uid])
     weight_goal = Column(String)
     results = Column(String)
     time = Column(String)
     days = Column(Integer)
     level = Column(String)
 
-class Choices(Base):
+class Choice(Base):
     __tablename__ = "choose"
-    uid = Column(Integer, ForeignKey('User.user_id', ondelete='CASCADE'), nullable=False)
-    user = relationship('User', backred='users')
-    eid = Column(Integer, ForeignKey('Exercises.exercises_id', ondelete='CASCADE'), nullable=False)
-    exercise = relationship('Exercises', backred='functionalfitnessdatabase')
+    uid = Column(Integer, ForeignKey('users.uid', ondelete='CASCADE'), primary_key=True)
+    user = relationship('User', backref='chooses', foreign_keys=[uid])
+    eid = Column(Integer, ForeignKey('functionalfitnessdatabase.eid', ondelete='CASCADE'))
+    exercise = relationship('Exercise', backref='choose', foreign_keys=[eid])

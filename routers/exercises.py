@@ -27,12 +27,17 @@ def get_db():
         db.close()
 
 
-@router.get("/{eid}", response_model=list[ExerciseResponse])
+@router.get("/{eid}", response_model=ExerciseResponse)
+async def get_exercise_by_eid(eid: int, db: Session = Depends(get_db)):
+    exercise = db.query(Exercise).filter(Exercise.eid == eid).first()
+    return ExerciseResponse.from_orm(exercise)
+
+@router.get("", response_model=list[ExerciseResponse])
 async def list_exercises_by_eid(eid: int, db: Session = Depends(get_db)):
     exercises = db.query(Exercise).filter(Exercise.eid == eid)
     return exercises
 
-@router.get("/{eid}", response_model=list[ExerciseResponse])
+@router.get("", response_model=list[ExerciseResponse])
 async def list_exercises(skip: int=0, limit: int=10, db: Session = Depends(get_db)):
     exercises = db.query(Exercise).offset(skip).limit(limit).all()
     return exercises
