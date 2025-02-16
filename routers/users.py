@@ -30,13 +30,15 @@ def get_db():
 
 @router.get("/{uid}", response_model=UserResponse)
 async def get_user_by_uid(uid: int, db: Session = Depends(get_db)):
-    users = db.query(User).filter(User.uid == uid)
-    return UserResponse.from_orm(users)
+    user = db.query(User).filter(User.uid == uid).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail=f"User {uid} not found")
+    return UserResponse.from_orm(user)
 
 @router.get("", response_model=list[UserResponse])
 async def list_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     users = db.query(User).offset(skip).limit(limit).all()
-    return users
+    return [UserResponse.from_orm(user) for user in users]
 
 @router.post("", response_model=UserResponse)
 async def create_user(user: UserCreate, db: Session = Depends(get_db)):
@@ -81,6 +83,6 @@ async def update_user(
 
         db.commit()
         db.refresh(user_to_update)
-        return user_to_update
+        return UserResponse.from_orm(user_to_update)
     else:
         raise HTTPException(status_code=404, detail=f"User with ID {uid} not found")

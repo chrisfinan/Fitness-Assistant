@@ -30,17 +30,14 @@ def get_db():
 @router.get("/{eid}", response_model=ExerciseResponse)
 async def get_exercise_by_eid(eid: int, db: Session = Depends(get_db)):
     exercise = db.query(Exercise).filter(Exercise.eid == eid).first()
+    if exercise is None:
+        raise HTTPException(status_code=404, detail=f"Exercise {eid} not found")
     return ExerciseResponse.from_orm(exercise)
-
-@router.get("", response_model=list[ExerciseResponse])
-async def list_exercises_by_eid(eid: int, db: Session = Depends(get_db)):
-    exercises = db.query(Exercise).filter(Exercise.eid == eid)
-    return exercises
 
 @router.get("", response_model=list[ExerciseResponse])
 async def list_exercises(skip: int=0, limit: int=10, db: Session = Depends(get_db)):
     exercises = db.query(Exercise).offset(skip).limit(limit).all()
-    return exercises
+    return [ExerciseResponse.from_orm(exercise) for exercise in exercises]
 
 @router.post("", response_model=ExerciseResponse)
 async def create_exercise(exercise: ExerciseCreate, db: Session = Depends(get_db)):
@@ -52,6 +49,9 @@ async def create_exercise(exercise: ExerciseCreate, db: Session = Depends(get_db
         difficulty_level=exercise.difficulty_level,
         target_muscle_group=exercise.target_muscle_group,
         prime_mover_muscle=exercise.prime_mover_muscle,
+        secondary_muscle=exercise.secondary_muscle,
+        tertiary_muscle=exercise.tertiary_muscle,
+        primary_equipment=exercise.primary_equipment,
         secondary_equipment=exercise.secondary_equipment,
         body_region=exercise.body_region,
         force_type=exercise.force_type,
@@ -62,7 +62,7 @@ async def create_exercise(exercise: ExerciseCreate, db: Session = Depends(get_db
     db.add(new_exercise)
     db.commit()
     db.refresh(new_exercise)
-    return new_exercise
+    return ExerciseResponse.from_orm(new_exercise)
 
 @router.delete("/{eid}", response_model=str)
 async def delete_exercise(eid: int, db: Session = Depends(get_db)):
@@ -91,6 +91,6 @@ async def update_exercise(
 
         db.commit()
         db.refresh(exercise_to_update)
-        return exercise_to_update
+        return ExerciseResponse.from_orm(exercise_to_update)
     else:
         raise HTTPException(status_code=404, detail=f"Exercise with ID {eid} not found")
