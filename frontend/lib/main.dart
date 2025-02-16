@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login_page.dart';
-import 'dart:convert';
-import 'global_vars.dart';
+import 'survey_page.dart';
+import 'saved_data.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,12 +13,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Hide debug banner
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Login App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LoginPage(), // Start with the login page
+      home: LoginPage(), // App starts at the login page
     );
   }
 }
@@ -34,6 +34,18 @@ class MyHomePage extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginPage()),
+              );
+            },
+          ),
+        ],
       ),
       body: Center(
         child: Column(
@@ -61,32 +73,6 @@ class MyHomePage extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-// Placeholder for Survey Page
-class SurveyPage extends StatelessWidget {
-  const SurveyPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Survey Page")),
-      body: const Center(child: Text("This is the Survey Page")),
-    );
-  }
-}
-
-// Placeholder for Saved Data Page
-class SavedDataPage extends StatelessWidget {
-  const SavedDataPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Saved Data Page")),
-      body: const Center(child: Text("This is the Saved Data Page")),
     );
   }
 }
