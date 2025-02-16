@@ -94,3 +94,4 @@ async def update_exercise(
         return ExerciseResponse.from_orm(exercise_to_update)
     else:
         raise HTTPException(status_code=404, detail=f"Exercise with ID {eid} not found")
+

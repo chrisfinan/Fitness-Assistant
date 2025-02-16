@@ -60,3 +60,4 @@ class Choice(Base):
     user = relationship('User', backref='chooses', foreign_keys=[uid])
     eid = Column(Integer, ForeignKey('functionalfitnessdatabase.eid', ondelete='CASCADE'))
     exercise = relationship('Exercise', backref='choose', foreign_keys=[eid])
+
