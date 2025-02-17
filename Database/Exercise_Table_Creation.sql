@@ -11,38 +11,38 @@
 -- ***************************
 
 CREATE TABLE FunctionalFitnessDatabase(
-   Exercise_ID                       INTEGER  NOT NULL PRIMARY KEY 
-  ,Exercise                          VARCHAR(255) NOT NULL
+   Exercise_ID                       SERIAL  NOT NULL PRIMARY KEY
+  ,Exercise                          VARCHAR(255)
   ,"Short YouTube Demonstration"     VARCHAR(500)
   ,"InDepth YouTube Explanation"     VARCHAR(500)
-  ,"Difficulty Level"                VARCHAR(255) NOT NULL
-  ,"Target Muscle Group"             VARCHAR(255) NOT NULL
-  ,"Prime Mover Muscle"              VARCHAR(255) NOT NULL
+  ,"Difficulty Level"                VARCHAR(255)
+  ,"Target Muscle Group"             VARCHAR(255)
+  ,"Prime Mover Muscle"              VARCHAR(255)
   ,"Secondary Muscle"                VARCHAR(255)
   ,"Tertiary Muscle"                 VARCHAR(255)
-  ,"Primary Equipment"               VARCHAR(255) NOT NULL
+  ,"Primary Equipment"               VARCHAR(255)
   ," Primary Items"                  INTEGER 
-  ,"Secondary Equipment"             VARCHAR(255) NOT NULL
-  ," Secondary Items"                INTEGER  NOT NULL
-  ,Posture                           VARCHAR(255) NOT NULL
-  ,"Single or Double Arm"            VARCHAR(255) NOT NULL
-  ,"Continuous or Alternating Arms"  VARCHAR(255) NOT NULL
-  ,Grip                              VARCHAR(255) NOT NULL
-  ,"Load Position Ending"            VARCHAR(255) NOT NULL
-  ,"Continuous or Alternating Legs"  VARCHAR(255) NOT NULL
-  ,"Foot Elevation"                  VARCHAR(255) NOT NULL
-  ,"Combination Exercises"           VARCHAR(255) NOT NULL
+  ,"Secondary Equipment"             VARCHAR(255)
+  ," Secondary Items"                INTEGER
+  ,Posture                           VARCHAR(255)
+  ,"Single or Double Arm"            VARCHAR(255)
+  ,"Continuous or Alternating Arms"  VARCHAR(255)
+  ,Grip                              VARCHAR(255)
+  ,"Load Position Ending"            VARCHAR(255)
+  ,"Continuous or Alternating Legs"  VARCHAR(255)
+  ,"Foot Elevation"                  VARCHAR(255)
+  ,"Combination Exercises"           VARCHAR(255)
   ,"Movement Pattern 1"              VARCHAR(255)
   ,"Movement Pattern 2"              VARCHAR(255)
   ,"Movement Pattern 3"              VARCHAR(255)
   ,"Plane Of Motion 1"               VARCHAR(255)
   ,"Plane Of Motion 2"               VARCHAR(255)
   ,"Plane Of Motion 3"               VARCHAR(255)
-  ,"Body Region"                     VARCHAR(255) NOT NULL
-  ,"Force Type"                      VARCHAR(255) NOT NULL
+  ,"Body Region"                     VARCHAR(255)
+  ,"Force Type"                      VARCHAR(255)
   ,Mechanics                         VARCHAR(255)
-  ,Laterality                        VARCHAR(255) NOT NULL
-  ,"Primary Exercise Classification" VARCHAR(255) NOT NULL
+  ,Laterality                        VARCHAR(255)
+  ,"Primary Exercise Classification" VARCHAR(255)
 );
 
 INSERT INTO FunctionalFitnessDatabase(Exercise_ID,Exercise,"Short YouTube Demonstration","InDepth YouTube Explanation","Difficulty Level","Target Muscle Group","Prime Mover Muscle","Secondary Muscle","Tertiary Muscle","Primary Equipment"," Primary Items","Secondary Equipment"," Secondary Items",Posture,"Single or Double Arm","Continuous or Alternating Arms",Grip,"Load Position Ending","Continuous or Alternating Legs","Foot Elevation","Combination Exercises","Movement Pattern 1","Movement Pattern 2","Movement Pattern 3","Plane Of Motion 1","Plane Of Motion 2","Plane Of Motion 3","Body Region","Force Type",Mechanics,Laterality,"Primary Exercise Classification") VALUES (1,'Stability Ball Dead Bug','https://youtu.be/5jDEulwWs04','https://youtu.be/Sa4ZWmnSC5o','Beginner','Abdominals','Rectus Abdominis',NULL,NULL,'Stability Ball',1,'None',0,'Supine','Single Arm','Alternating','Neutral','Other','Alternating','No Elevation','Single Exercise','Anti-Extension',NULL,NULL,'Sagittal Plane',NULL,NULL,'Midsection','Other','Compound','Contralateral','Postural');

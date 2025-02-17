@@ -1,11 +1,14 @@
 CREATE TABLE Users(
    user_ID                           SERIAL  NOT NULL PRIMARY KEY
   ,username                          VARCHAR(255)
-  ,password                          VARCHAR(255)
+  ,first_name                        VARCHAR(255)
+  ,last_name                         VARCHAR(255)
+  ,emil_address                      VARCHAR(255)
+  ,phone_number                      VARCHAR(255)
 );
  
 CREATE TABLE Information(
-   user_ID                           INTEGER
+   user_ID                           INTEGER NOT NULL PRIMARY KEY
   ,weight_goal                       VARCHAR(255)
   ,results                           VARCHAR(255)
   ,time                              VARCHAR(255)
