@@ -1,10 +1,11 @@
 DB_PASS = "TheLine78$"
 DB_USER = "postgres"
 DB_NAME = "Fitness_AssistantDB"
-DB_HOST = "129.68.189.163"
+DB_HOST = "localhost"
 
 # start fastapi server:
 # uvicorn app.main:app --host 129.68.189.163 --port 8000
+# uvicorn app.main:app --host 10.0.0.168 --port 8000
 # uvicorn app.main:app --host 0.0.0.0 --port 8000
 # uvicorn app.main:app --host 129.68.188.1 --port 8000
 # uvicorn app.main:app --host 129.68.188.160 --port 8000

@@ -8,7 +8,6 @@ class UserResponse(BaseModel):
     first_name: str
     last_name: str
     email_address: str
-    phone_number: str
 
     class Config:
         arbitrary_types_allowed = True
@@ -20,7 +19,6 @@ class UserCreate(BaseModel):
     first_name: str
     last_name: str
     email_address: str
-    phone_number: str
 
 class UserUpdate(BaseModel):
     username: str
@@ -28,7 +26,6 @@ class UserUpdate(BaseModel):
     first_name: str
     last_name: str
     email_address: str
-    phone_number: str
 
 # Enable ORM compatibility
     class Config:
