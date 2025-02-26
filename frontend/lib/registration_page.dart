@@ -18,15 +18,13 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _phoneNumberController = TextEditingController();
 
   Future<void> _createUser() async {
     if (_usernameController.text.isEmpty ||
         _passwordController.text.isEmpty ||
         _firstNameController.text.isEmpty ||
         _lastNameController.text.isEmpty ||
-        _emailController.text.isEmpty ||
-        _phoneNumberController.text.isEmpty) {
+        _emailController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('All fields must be filled out!')),
       );
@@ -44,7 +42,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
         'first_name': _firstNameController.text,
         'last_name': _lastNameController.text,
         'email_address': _emailController.text,
-        'phone_number': _phoneNumberController.text,
       }),
     );
 
@@ -106,14 +103,6 @@ class _RegistrationPageState extends State<RegistrationPage> {
                   controller: _emailController,
                   decoration: const InputDecoration(
                     labelText: 'Email Address',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _phoneNumberController,
-                  decoration: const InputDecoration(
-                    labelText: 'Phone Number',
                     border: OutlineInputBorder(),
                   ),
                 ),
