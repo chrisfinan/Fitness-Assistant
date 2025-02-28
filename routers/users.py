@@ -4,7 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from app.global_vars import DB_PASS, DB_USER, DB_NAME, DB_HOST
 from fastapi import FastAPI, HTTPException, Depends, APIRouter
 from app.models import Base, User
-from schemas.user import UserResponse, UserCreate, UserUpdate
+from schemas.user import UserResponse, UserCreate, UserUpdate, UserLogin
 
 # Define your connection string
 conn_string = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
@@ -85,3 +85,19 @@ async def update_user(
         return UserResponse.from_orm(user_to_update)
     else:
         raise HTTPException(status_code=404, detail=f"User with ID {uid} not found")
+
+@router.post("/login")
+async def login(user: UserLogin, db: Session = Depends(get_db)):
+    # Fetch the user from the database by username
+    db_user = db.query(User).filter(User.username == user.username).first()
+
+    # Check if user exists
+    if db_user is None:
+        # Log the error for debugging purposes
+        print(f"User not found: {user.username}")
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # No user creation logic should be here
+
+    # If user exists, return a success message (ignoring password validation for now)
+    return {"message": "Login successful!"}

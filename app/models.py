@@ -39,9 +39,9 @@ class User(Base):
     uid: int = Column(Integer, primary_key=True, index=True, autoincrement=True)
     username = Column(String)
     password = Column(String)
-    first_name = Column(String)
-    last_name = Column(String)
-    email_address = Column(String)
+    first_name = Column(String, nullable=True)
+    last_name = Column(String, nullable=True)
+    email_address = Column(String, nullable=True)
 
 class UserInformation(Base):
     __tablename__ = "information"
