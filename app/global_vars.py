@@ -10,4 +10,5 @@ DB_HOST = "localhost"
 # uvicorn app.main:app --host 129.68.188.1 --port 8000
 # uvicorn app.main:app --host 129.68.188.160 --port 8000
 # uvicorn app.main:app --host localhost --port 8000
+# uvicorn app.main:app --host 129.68.181.199 --port 8000
 # school ip: 129.68.188.182, or 129.68.191.52
