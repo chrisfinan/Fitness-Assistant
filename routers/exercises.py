@@ -1,10 +1,14 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
+from sqlalchemy import case
 from sqlalchemy.orm import sessionmaker
 from app.global_vars import DB_PASS, DB_USER, DB_NAME, DB_HOST
 from fastapi import FastAPI, HTTPException, Depends, APIRouter
-from app.models import Base, Exercise
+from app.models import Base, Exercise, UserInformation, Choice
 from schemas.exercise import ExerciseResponse, ExerciseCreate, ExerciseUpdate
+from typing import List
+from operator import or_, and_
+from random import random
 
 # Define your connection string
 conn_string = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
@@ -96,3 +100,91 @@ async def update_exercise(eid: int, exercise_data: ExerciseUpdate, db: Session =
         return ExerciseResponse.from_orm(exercise_to_update)
     else:
         raise HTTPException(status_code=404, detail=f"Exercise with ID {eid} not found")
+
+'''
+# Helper function to get max number of exercises based on time and days
+def get_max_exercises(time: str, days: int) -> int:
+    time_mapping = {
+        "30-45": 4,
+        "45-60 minutes": 6,
+        "More than 1 hour": 8
+    }
+    if time not in time_mapping:
+        raise HTTPException(status_code=400, detail="Invalid time duration")
+    return time_mapping[time] * days
+
+
+# @router.get("/by_info")
+async def get_exercises_by_info(
+        uid: int,
+        results: str,
+        time: str,
+        days: int,
+        db: Session = Depends(get_db)
+):
+    # Explicitly convert uid to int (although FastAPI should do this automatically)
+    try:
+        uid = int(uid)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid UID. It must be an integer.")
+
+    # Explicitly convert uid to int (although FastAPI should do this automatically)
+    try:
+        days = int(days)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid days. It must be an integer.")
+
+    # Validate days
+    if days not in range(1, 7):
+        raise HTTPException(status_code=400, detail="Days must be between 1 and 6")
+
+    # Validate results
+    if results not in ['strength', 'aesthetics', 'endurance']:
+        raise HTTPException(status_code=400,
+                            detail="Invalid results type. Choose from strength, aesthetics, or endurance")
+
+    # Get the max exercises
+    max_exercises = get_max_exercises(time, days)
+
+    # Define PEC mapping
+    pec_mapping = {
+        "strength": ['powerlifting', 'ballistics', 'mobility'],
+        "aesthetics": ['bodybuilding'],
+        "endurance": ['calisthenics', 'grinds', 'bodybuilding']
+    }
+
+    # Query exercises
+    query = (
+        db.query(Exercise)
+        .join(Choice, Choice.eid == Exercise.eid)
+        .join(UserInformation, Choice.uid == UserInformation.uid)
+        .filter(Choice.uid == uid)
+        .filter(Exercise.primary_exercise_classification.in_(pec_mapping[results]))
+    )
+
+    # Apply day-based filters
+    if days in [3, 6]:
+        query = query.filter(
+            or_(
+                Exercise.force_type == "pull",
+                Exercise.force_type == "push",
+                Exercise.body_region == "lower body"
+            )
+        )
+    elif days in [4, 5]:
+        query = query.filter(
+            Exercise.target_muscle_group.in_([
+                "chest", "triceps", "back", "biceps", "shoulders", "trapezius",
+                "forearms", "quadriceps", "abductors", "glutes", "hamstrings", "abdominals"
+            ])
+        )
+
+    exercises = query.all()
+    if not exercises:
+        raise HTTPException(status_code=404, detail="No exercises found with the given filters")
+
+    # Randomly select exercises up to the max limit
+    selected_exercises = random.sample(exercises, min(len(exercises), max_exercises))
+    return [ExerciseResponse.from_orm(exercise) for exercise in selected_exercises]
+'''
+

@@ -1,2 +1,2 @@
-const String ip = "129.68.181.199:8000";
+const String ip = "10.0.0.168:8000";
 int current_user = 0;

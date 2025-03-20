@@ -36,6 +36,13 @@
         </list>
       </option>
     </inspection_tool>
+    <inspection_tool class="PyPep8NamingInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="ignoredErrors">
+        <list>
+          <option value="N803" />
+        </list>
+      </option>
+    </inspection_tool>
     <inspection_tool class="PyShadowingBuiltinsInspection" enabled="true" level="WEAK WARNING" enabled_by_default="true">
       <option name="ignoredNames">
         <list>
@@ -50,6 +57,10 @@
         <list>
           <option value="re.Match.strip" />
           <option value="FindPath.HospitalMap.goal_pos" />
+          <option value="routers.exercises.sqlalchemy" />
+          <option value="routers.exercises.fastapi" />
+          <option value="_random.random.sample" />
+          <option value="int.in_" />
         </list>
       </option>
     </inspection_tool>
