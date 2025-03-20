@@ -19,6 +19,7 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 router = APIRouter()
 
+
 def get_db():
     db = SessionLocal()
     try:
@@ -34,10 +35,12 @@ async def get_exercise_by_eid(eid: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail=f"Exercise {eid} not found")
     return ExerciseResponse.from_orm(exercise)
 
+
 @router.get("", response_model=list[ExerciseResponse])
-async def list_exercises(skip: int=0, limit: int=10, db: Session = Depends(get_db)):
+async def list_exercises(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     exercises = db.query(Exercise).offset(skip).limit(limit).all()
     return [ExerciseResponse.from_orm(exercise) for exercise in exercises]
+
 
 @router.post("", response_model=ExerciseResponse)
 async def create_exercise(exercise: ExerciseCreate, db: Session = Depends(get_db)):
@@ -64,6 +67,7 @@ async def create_exercise(exercise: ExerciseCreate, db: Session = Depends(get_db
     db.refresh(new_exercise)
     return ExerciseResponse.from_orm(new_exercise)
 
+
 @router.delete("/{eid}", response_model=str)
 async def delete_exercise(eid: int, db: Session = Depends(get_db)):
     # Retrieve the Exercise object by its ID
@@ -79,9 +83,7 @@ async def delete_exercise(eid: int, db: Session = Depends(get_db)):
 
 
 @router.put("/{eid}", response_model=ExerciseResponse)
-async def update_exercise(
-    eid: int, exercise_data: ExerciseUpdate, db: Session = Depends(get_db)
-):
+async def update_exercise(eid: int, exercise_data: ExerciseUpdate, db: Session = Depends(get_db)):
     exercise_to_update = db.query(Exercise).filter(Exercise.eid == eid).first()
 
     if exercise_to_update:
@@ -94,4 +96,3 @@ async def update_exercise(
         return ExerciseResponse.from_orm(exercise_to_update)
     else:
         raise HTTPException(status_code=404, detail=f"Exercise with ID {eid} not found")
-

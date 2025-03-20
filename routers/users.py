@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.global_vars import DB_PASS, DB_USER, DB_NAME, DB_HOST
 from fastapi import FastAPI, HTTPException, Depends, APIRouter
-from app.models import Base, User
+from app.models import Base, User, UserInformation, Choice
 from schemas.user import UserResponse, UserCreate, UserUpdate, UserLogin
 
 # Define your connection string
@@ -50,10 +50,30 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
         last_name=user.last_name,
         email_address=user.email_address,
     )
+
+    # If a username is already taken (username must be unique)
+    existing_user = db.query(User).filter(User.username == user.username).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username already taken")
+
+    # Add new user and commit to get the UID
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+
+    # Create a new record in the 'informations' table, using the user's uid as foreign key
+    new_information = UserInformation(
+        uid=new_user.uid  # Use the newly created user's UID as the foreign key
+        # You can add other fields here if necessary, depending on your Information model
+    )
+
+    # Add new information record and commit
+    db.add(new_information)
+    db.commit()
+
+    # Return the user response
     return UserResponse.from_orm(new_user)
+
 
 @router.delete("/{uid}", response_model=str)
 async def delete_user(uid: int, db: Session = Depends(get_db)):
@@ -61,12 +81,22 @@ async def delete_user(uid: int, db: Session = Depends(get_db)):
     user_to_delete = db.query(User).filter(User.uid == uid).first()
 
     if user_to_delete:
+        # Delete all related rows in the Information table
+        db.query(UserInformation).filter(UserInformation.uid == uid).delete()
+
+        # Delete all related rows in the Choose table
+        db.query(Choice).filter(Choice.uid == uid).delete()
+
         # Delete the User object
         db.delete(user_to_delete)
+
+        # Commit the changes to the database
         db.commit()
-        return f"User {uid} successfully deleted."
+
+        return f"User {uid} and all associated information successfully deleted."
     else:
         raise HTTPException(status_code=404, detail=f"User with ID {uid} not found")
+
 
 @router.put("/{uid}", response_model=UserResponse)
 async def update_user(
@@ -96,8 +126,6 @@ async def login(user: UserLogin, db: Session = Depends(get_db)):
         # Log the error for debugging purposes
         print(f"User not found: {user.username}")
         raise HTTPException(status_code=404, detail="User not found")
-
-    # No user creation logic should be here
 
     # If user exists, return a success message (ignoring password validation for now)
     return {"message": "Login successful!"}

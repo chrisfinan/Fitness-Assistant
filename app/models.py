@@ -9,6 +9,7 @@ from sqlalchemy import (
     Double,
     ForeignKey,
     Boolean,
+    UniqueConstraint,
 )
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -37,7 +38,7 @@ class Exercise(Base):
 class User(Base):
     __tablename__ = "users"
     uid: int = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    username = Column(String)
+    username = Column(String, unique=True)
     password = Column(String)
     first_name = Column(String, nullable=True)
     last_name = Column(String, nullable=True)
@@ -53,10 +54,18 @@ class UserInformation(Base):
     days = Column(Integer, nullable=True)
     level = Column(String,nullable=True)
 
+
 class Choice(Base):
     __tablename__ = "choose"
+
     uid = Column(Integer, ForeignKey('users.uid', ondelete='CASCADE'), primary_key=True)
+    eid = Column(Integer, ForeignKey('functionalfitnessdatabase.eid', ondelete='CASCADE'), primary_key=True)
+
+    # Relationships
     user = relationship('User', backref='chooses', foreign_keys=[uid])
-    eid = Column(Integer, ForeignKey('functionalfitnessdatabase.eid', ondelete='CASCADE'))
     exercise = relationship('Exercise', backref='choose', foreign_keys=[eid])
 
+    # Unique constraint for the combination of uid and eid (optional, since it's already a primary key)
+    __table_args__ = (
+        UniqueConstraint('uid', 'eid', name='_uid_eid_uc'),
+    )
