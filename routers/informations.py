@@ -86,14 +86,14 @@ async def update_information(
     else:
         raise HTTPException(status_code=404, detail=f"User with ID {uid} not found")
 
-'''
-@router.get("/by_info", response_model=List[ExerciseResponse])
+
+@router.get("/by_info_test/{uid}", response_model=List[ExerciseResponse])
 async def get_exercises_by_info(
         uid: int,
         results: str,
         time: str,
         days: int,
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_db),
 ):
     # Query exercises tied to the given UID through the Choice table
     exercises = (
@@ -108,4 +108,3 @@ async def get_exercises_by_info(
         raise HTTPException(status_code=404, detail="No exercises found for the given user")
 
     return [ExerciseResponse.from_orm(exercise) for exercise in exercises]
-'''
