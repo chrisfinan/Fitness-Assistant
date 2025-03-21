@@ -1,15 +1,15 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
-from sqlalchemy import case
 from sqlalchemy.orm import sessionmaker
 from app.global_vars import DB_PASS, DB_USER, DB_NAME, DB_HOST
 from fastapi import FastAPI, HTTPException, Depends, APIRouter
-from app.models import Base, Exercise, UserInformation, Choice
+from app.models import Base, Exercise, UserInformation, Choose, User
 from schemas.exercise import ExerciseResponse, ExerciseCreate, ExerciseUpdate
 from typing import List
-from operator import or_, and_
-from random import random, sample
+from operator import or_
+from random import random
 import random
+from routers.users import get_user_by_uid
 
 # Define your connection string
 conn_string = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
@@ -125,6 +125,34 @@ async def get_exercises_by_info(
         days: int,
         db: Session = Depends(get_db)
 ):
+    # Validate that the uid exists
+    user = db.query(User).filter(User.uid == uid).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Update or insert user information
+    information_to_update = db.query(UserInformation).filter(UserInformation.uid == uid).first()
+
+    if information_to_update:
+        # Update existing record
+        information_to_update.results = results
+        information_to_update.time = time
+        information_to_update.days = days
+    else:
+        # Create new record if not found
+        information_to_update = UserInformation(
+            uid=uid,
+            results=results,
+            time=time,
+            days=days,
+            weight_goal=None,
+            level=None
+        )
+        db.add(information_to_update)
+
+    db.commit()
+    db.refresh(information_to_update)
+
     # Define PEC mapping
     pec_mapping = {
         "Strength": ['Powerlifting', 'Ballistics', 'Mobility'],
@@ -141,12 +169,9 @@ async def get_exercises_by_info(
 
     max_exercises = get_max_exercises(time, days)
 
-    # Query all exercises while keeping join statements and filtering by results
+    # Query all exercises filtering by results
     exercises = (
         db.query(Exercise)
-        .join(Choice, Choice.eid == Exercise.eid)
-        .join(UserInformation, Choice.uid == UserInformation.uid)
-        .filter(Choice.uid == uid)
         .filter(Exercise.primary_exercise_classification.in_(pec_mapping[results]))
     )
 
@@ -178,70 +203,13 @@ async def get_exercises_by_info(
     # Randomly filter exercises down to max_exercises limit
     selected_exercises = random.sample(exercises, min(len(exercises), max_exercises))
 
+    # Delete existing entries in Choose table for user entered
+    db.query(Choose).filter(Choose.uid == uid).delete()
+
+    # Insert new selected exercises into Choose table for this user
+    new_entries = [Choose(uid=uid, eid=exercise.eid) for exercise in selected_exercises]
+    db.bulk_save_objects(new_entries)
+
+    db.commit()  # Commit transaction to apply changes
+
     return [ExerciseResponse.from_orm(exercise) for exercise in selected_exercises]
-
-
-'''
-@router.get("/by_info/{uid}", response_model=List[ExerciseResponse])
-async def get_exercises_by_info(
-        uid: int,
-        results: str,
-        time: str,
-        days: int,
-        db: Session = Depends(get_db)
-):
-    # Validate days
-    if days not in range(1, 7):
-        raise HTTPException(status_code=400, detail="Days must be between 1 and 6")
-
-    # Validate results
-    if results not in ['strength', 'aesthetics', 'endurance']:
-        raise HTTPException(status_code=400,
-                            detail="Invalid results type. Choose from strength, aesthetics, or endurance")
-
-    # Get the max exercises
-    max_exercises = get_max_exercises(time, days)
-
-    # Define PEC mapping
-    pec_mapping = {
-        "strength": ['powerlifting', 'ballistics', 'mobility'],
-        "aesthetics": ['bodybuilding'],
-        "endurance": ['calisthenics', 'grinds', 'bodybuilding']
-    }
-
-    # Query exercises
-    query = (
-        db.query(Exercise)
-        .join(Choice, Choice.eid == Exercise.eid)
-        .join(UserInformation, Choice.uid == UserInformation.uid)
-        .filter(Choice.uid == uid)
-        .filter(Exercise.primary_exercise_classification.in_(pec_mapping[results]))
-    )
-
-    # Apply day-based filters
-    if days in [3, 6]:
-        query = query.filter(
-            or_(
-                Exercise.force_type == "pull",
-                or_(
-                    Exercise.force_type == "push",
-                    Exercise.body_region == "lower body"
-                )
-            )
-        )
-    elif days in [4, 5]:
-        query = query.filter(
-            Exercise.target_muscle_group.in_([
-                "chest", "triceps", "back", "biceps", "shoulders", "trapezius",
-                "forearms", "quadriceps", "abductors", "glutes", "hamstrings", "abdominals"
-            ])
-        )
-
-    exercises = query.all()
-    if not exercises:
-        raise HTTPException(status_code=404, detail="No exercises found with the given filters")
-
-    # Randomly select exercises up to the max limit
-    selected_exercises = random.sample(exercises, min(len(exercises), max_exercises))
-    return [ExerciseResponse.from_orm(exercise) for exercise in selected_exercises]
-'''

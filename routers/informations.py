@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.global_vars import DB_PASS, DB_USER, DB_NAME, DB_HOST
 from fastapi import FastAPI, HTTPException, Depends, APIRouter
-from app.models import Base, UserInformation, Exercise, Choice
+from app.models import Base, UserInformation, Exercise, Choose
 from schemas.information import InformationUpdate, InformationCreate, InformationResponse
 from schemas.exercise import ExerciseResponse, ExerciseCreate, ExerciseUpdate
 from typing import List
@@ -85,26 +85,3 @@ async def update_information(
         return InformationResponse.from_orm(information_to_update)
     else:
         raise HTTPException(status_code=404, detail=f"User with ID {uid} not found")
-
-
-@router.get("/by_info_test/{uid}", response_model=List[ExerciseResponse])
-async def get_exercises_by_info(
-        uid: int,
-        results: str,
-        time: str,
-        days: int,
-        db: Session = Depends(get_db),
-):
-    # Query exercises tied to the given UID through the Choice table
-    exercises = (
-        db.query(Exercise)
-        .join(Choice, Choice.eid == Exercise.eid)
-        .join(UserInformation, UserInformation.uid == Choice.uid)
-        .filter(UserInformation.uid == uid)
-        .all()
-    )
-
-    if not exercises:
-        raise HTTPException(status_code=404, detail="No exercises found for the given user")
-
-    return [ExerciseResponse.from_orm(exercise) for exercise in exercises]
