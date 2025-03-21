@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.global_vars import DB_PASS, DB_USER, DB_NAME, DB_HOST
 from fastapi import FastAPI, HTTPException, Depends, APIRouter
-from app.models import Base, User, UserInformation, Choice, Exercise
+from app.models import Base, User, UserInformation, Choose, Exercise
 from schemas.user import UserResponse, UserCreate, UserUpdate, UserLogin
 
 
@@ -72,20 +72,6 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
     db.add(new_information)
     db.commit()
 
-    # Add a combination of the user with every exercise in the 'choose' table
-    exercises = db.query(Exercise).all()  # Fetch all exercises from the Exercise table
-
-    # Loop through all exercises and add a record to the Choose table for each exercise
-    for exercise in exercises:
-        new_choose = Choice(
-            uid=new_user.uid,   # Associate the user with the exercise
-            eid=exercise.eid,   # The exercise ID
-        )
-        db.add(new_choose)
-
-    # Commit all the new Choose records
-    db.commit()
-
     # Return the user response
     return UserResponse.from_orm(new_user)
 
@@ -101,7 +87,7 @@ async def delete_user(uid: int, db: Session = Depends(get_db)):
         db.query(UserInformation).filter(UserInformation.uid == uid).delete()
 
         # Delete all related rows in the Choose table
-        db.query(Choice).filter(Choice.uid == uid).delete()
+        db.query(Choose).filter(Choose.uid == uid).delete()
 
         # Delete the User object
         db.delete(user_to_delete)
@@ -132,6 +118,7 @@ async def update_user(
     else:
         raise HTTPException(status_code=404, detail=f"User with ID {uid} not found")
 
+'''
 @router.post("/login")
 async def login(user: UserLogin, db: Session = Depends(get_db)):
     # Fetch the user from the database by username
@@ -145,3 +132,4 @@ async def login(user: UserLogin, db: Session = Depends(get_db)):
 
     # If user exists, return a success message (ignoring password validation for now)
     return {"message": "Login successful!"}
+'''

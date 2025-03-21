@@ -55,7 +55,7 @@ class UserInformation(Base):
     level = Column(String,nullable=True)
 
 
-class Choice(Base):
+class Choose(Base):
     __tablename__ = "choose"
 
     uid = Column(Integer, ForeignKey('users.uid', ondelete='CASCADE'), primary_key=True)
