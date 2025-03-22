@@ -11,7 +11,7 @@
       <excludeFolder url="file://$MODULE_DIR$/frontend/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/frontend/build" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="Python 3.13 (Fitness-Assistant)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Dart Packages" level="project" />
     <orderEntry type="library" name="Dart SDK" level="project" />
