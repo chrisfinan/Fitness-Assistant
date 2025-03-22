@@ -1,7 +1,4 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from app.global_vars import DB_PASS, DB_USER, DB_NAME, DB_HOST
 from fastapi import FastAPI, HTTPException, Depends, APIRouter
 from app.models import Base, Exercise, UserInformation, Choose, User
 from schemas.exercise import ExerciseResponse, ExerciseCreate, ExerciseUpdate
@@ -9,29 +6,9 @@ from typing import List
 from operator import or_
 from random import random
 import random
-from routers.users import get_user_by_uid
-
-# Define your connection string
-conn_string = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
-engine = create_engine(conn_string)
-Base.metadata.create_all(bind=engine)
-
-# Use the create_engine function to establish the connection
-engine = create_engine(conn_string)
-
-# Create a session factory
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+from app.db import get_db
 
 router = APIRouter()
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 @router.get("/{eid}", response_model=ExerciseResponse)
 async def get_exercise_by_eid(eid: int, db: Session = Depends(get_db)):

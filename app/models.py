@@ -47,13 +47,12 @@ class User(Base):
 class UserInformation(Base):
     __tablename__ = "information"
     uid = Column(Integer, ForeignKey('users.uid', ondelete='CASCADE'), primary_key=True)
-    user = relationship('User', backref='users', foreign_keys=[uid])
+    user = relationship('User', backref='information', foreign_keys=[uid])
     weight_goal = Column(String, nullable=True)
     results = Column(String, nullable=True)
     time = Column(String, nullable=True)
     days = Column(Integer, nullable=True)
-    level = Column(String,nullable=True)
-
+    level = Column(String, nullable=True)
 
 class Choose(Base):
     __tablename__ = "choose"

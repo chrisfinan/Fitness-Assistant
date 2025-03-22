@@ -1,4 +1,4 @@
-import 'dart:convert'; // Import for JSON decoding
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'login_helper.dart';
@@ -36,7 +36,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String username = "Loading...";
+  String username = "...";
+  String first_name = "";
+  String last_name = "...";
+  String email_address = "...";
 
   @override
   void initState() {
@@ -50,7 +53,11 @@ class _MyHomePageState extends State<MyHomePage> {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body); // Convert JSON string to map
       setState(() {
-        username = data["username"]; // Extract just the username
+        // Extracts user data for UI, only username is displayed for now
+        username = data["username"];
+        first_name = data["first_name"];
+        last_name = data["last_name"];
+        email_address = data["email_address"];
       });
     } else {
       setState(() {
@@ -116,6 +123,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _logoutUser() async {
+  final response = await authenticatedGetRequest("auth/logout");
+
+  if (response.statusCode == 200) {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove('session_token');
 
@@ -123,5 +133,15 @@ class _MyHomePageState extends State<MyHomePage> {
       context,
       MaterialPageRoute(builder: (context) => const LoginPage()),
     );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Logged out successfully!')),
+    );
+  } else {
+    // Handle logout failure
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Logged out failed!')),
+    );
   }
+}
 }

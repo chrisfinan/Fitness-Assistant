@@ -1,6 +1,5 @@
 from enum import Enum
 from typing import List
-
 from typing import Optional
 from pydantic import BaseModel
 
@@ -42,7 +41,6 @@ class ExerciseCreate(BaseModel):
     mechanics: str
     primary_exercise_classification: str
     setsxreps: str
-
 
 class ExerciseUpdate(BaseModel):
     exercise: str

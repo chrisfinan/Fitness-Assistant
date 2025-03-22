@@ -18,63 +18,66 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
 
   Future<void> _loginUser() async {
-  if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Please fill out all fields!')),
-    );
-    return;
-  }
+    if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill out all fields!')),
+      );
+      return;
+    }
 
-  final String apiUrl = '$baseUrl/auth/login';  // Use baseUrl
+    final String apiUrl = '$baseUrl/auth/login';  // Use baseUrl
 
-  try {
-    final response = await http.post(
-      Uri.parse(apiUrl),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'username': _usernameController.text,
-        'password': _passwordController.text,
-      }),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'username': _usernameController.text,
+          'password': _passwordController.text,
+        }),
+      );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);  // Decode response JSON
-      String? sessionToken = response.headers['set-cookie'];
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);  // Decode response JSON
+        String? sessionToken = response.headers['set-cookie'];
 
-      if (sessionToken != null) {
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('session_token', sessionToken);
+        if (sessionToken != null) {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('session_token', sessionToken);
 
-        if (data.containsKey("uid")) {
-          await prefs.setInt('uid', data["uid"]);  // Store UID
-          print("Saved UID: ${data["uid"]}");  // Debugging
+          if (data.containsKey("uid")) {
+            // Store user data in SharedPreferences
+            await prefs.setInt('uid', data["uid"]);
+            await prefs.setString('username', data["username"]);
+            await prefs.setString('first_name', data["first_name"]);
+            await prefs.setString('last_name', data["last_name"]);
+            await prefs.setString('email_address', data["email_address"]);
+          }
         }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login Successful!')),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MyHomePage(title: 'Home Page')),
+        );
+      } else if (response.statusCode == 404) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('User not found. Please try again.')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${response.body}')),
+        );
       }
-
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login Successful!')),
-      );
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const MyHomePage(title: 'Home Page')),
-      );
-    } else if (response.statusCode == 404) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('User not found. Please try again.')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: ${response.body}')),
+        SnackBar(content: Text('Failed to connect: $e')),
       );
     }
-  } catch (e) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Failed to connect: $e')),
-    );
   }
-}
-
 
   @override
   Widget build(BuildContext context) {

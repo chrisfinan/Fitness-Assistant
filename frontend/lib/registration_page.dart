@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'login_page.dart';
 import 'global_vars.dart';
 
 class RegistrationPage extends StatefulWidget {

@@ -1,31 +1,18 @@
 from fastapi import FastAPI, HTTPException, Depends, APIRouter, Request, Response
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from app.global_vars import DB_PASS, DB_USER, DB_NAME, DB_HOST
 from app.models import Base, User
+from routers.users import pwd_context
 from schemas.user import UserLogin
 import uuid
+from app.db import get_db
 
-# Define connection string
-conn_string = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
-engine = create_engine(conn_string)
-Base.metadata.create_all(bind=engine)
-
-# Create session factory
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# In-memory session store (use Redis in production)
+# In-memory session store
 sessions = {}
 
 router = APIRouter()
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
 
 @router.post("/login")
 async def login(user: UserLogin, response: Response, db: Session = Depends(get_db)):
@@ -33,6 +20,8 @@ async def login(user: UserLogin, response: Response, db: Session = Depends(get_d
 
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
+    if not verify_password(user.password, db_user.password):
+        raise HTTPException(status_code=401, detail="Invalid username or password")
 
     # Create a session token
     session_token = str(uuid.uuid4())
@@ -43,9 +32,12 @@ async def login(user: UserLogin, response: Response, db: Session = Depends(get_d
 
     return {
         "message": "Login successful!",
-        "uid": db_user.uid  # <-- Include UID in the response
+        "uid": db_user.uid,
+        "username": db_user.username,
+        "first_name": db_user.first_name,
+        "last_name": db_user.last_name,
+        "email_address": db_user.email_address
     }
-
 
 @router.get("/logout")
 async def logout(request: Request, response: Response):
@@ -70,4 +62,7 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)):
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    return {"username": db_user.username}
+    return {"username": db_user.username,
+            "first_name": db_user.first_name,
+            "last_name": db_user.last_name,
+            "email_address": db_user.email_address}

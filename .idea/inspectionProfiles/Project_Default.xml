@@ -61,6 +61,20 @@
           <option value="routers.exercises.fastapi" />
           <option value="_random.random.sample" />
           <option value="int.in_" />
+          <option value="app.db.sqlalchemy" />
+          <option value="app.main.fastapi" />
+          <option value="app.models.sqlalchemy" />
+          <option value="routers.auth.fastapi" />
+          <option value="routers.auth.sqlalchemy" />
+          <option value="routers.informations.sqlalchemy" />
+          <option value="routers.informations.fastapi" />
+          <option value="routers.users.sqlalchemy" />
+          <option value="routers.users.fastapi" />
+          <option value="routers.users.passlib" />
+          <option value="schemas.choose.pydantic" />
+          <option value="schemas.exercise.pydantic" />
+          <option value="schemas.information.pydantic" />
+          <option value="schemas.user.pydantic" />
         </list>
       </option>
     </inspection_tool>

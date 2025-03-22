@@ -1,42 +1,10 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from app.global_vars import DB_PASS, DB_USER, DB_NAME, DB_HOST
 from fastapi import FastAPI, HTTPException, Depends, APIRouter
-from app.models import Base, UserInformation, Exercise, Choose
-from schemas.information import InformationUpdate, InformationCreate, InformationResponse
-from schemas.exercise import ExerciseResponse, ExerciseCreate, ExerciseUpdate
-from typing import List
-
-# Define your connection string
-conn_string = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}/{DB_NAME}"
-engine = create_engine(conn_string)
-Base.metadata.create_all(bind=engine)
-
-# Use the create_engine function to establish the connection
-engine = create_engine(conn_string)
-
-# Create a session factory
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+from app.models import Base, UserInformation
+from schemas.information import InformationUpdate, InformationResponse
+from app.db import get_db
 
 router = APIRouter()
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
 
 
 @router.get("/{uid}", response_model=InformationResponse)

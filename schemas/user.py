@@ -1,6 +1,6 @@
 from typing import List
-
 from pydantic import BaseModel
+
 class UserResponse(BaseModel):
     uid: int
     username: str
@@ -37,4 +37,3 @@ class UserLogin(BaseModel):
 
     class Config:
         orm_mode = True
-
