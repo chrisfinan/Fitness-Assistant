@@ -49,7 +49,7 @@ async def logout(request: Request, response: Response):
     response.delete_cookie("session_token")
     return {"message": "Logged out successfully"}
 
-@router.get("/me")
+@router.get("/logged_in_user")
 async def get_current_user(request: Request, db: Session = Depends(get_db)):
     session_token = request.cookies.get("session_token")
 
@@ -57,6 +57,7 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     user_id = sessions[session_token]
+
     db_user = db.query(User).filter(User.uid == user_id).first()
 
     if not db_user:

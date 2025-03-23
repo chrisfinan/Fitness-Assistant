@@ -9,106 +9,155 @@ class SavedDataPage extends StatefulWidget {
 
   @override
   _SavedDataPageState createState() => _SavedDataPageState();
-
 }
 
 class _SavedDataPageState extends State<SavedDataPage> {
   int? uid;
-  Map<String, List<dynamic>> exercisesByDay = {}; // Store exercises by day
-  List<String> days = []; // Days array to handle Day 1, Day 2, etc.
+  int? days;
+  String time = "...";
+  List<String> exercises = [];
+  Map<int, List<String>> exercisesByDay = {}; // Stores exercises per day
 
   @override
   void initState() {
     super.initState();
-    _fetchUserID();
+    _fetchUserInfo();
   }
 
-  // Fetch UID from SharedPreferences
-  Future<void> _fetchUserID() async {
+  // Fetches relevant user info for this page
+  Future<void> _fetchUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? storedUid = prefs.getInt('uid');
 
-    print("Fetched UID from SharedPreferences: $storedUid");
+    if (storedUid == null) return;
 
-    setState(() {
-      uid = storedUid;
-    });
+    final url = Uri.parse('$baseUrl/users/user_info/$storedUid');
 
-    // Fetch exercises after UID is loaded
-    if (uid != null) {
-      await _fetchExercises();
-    }
-  }
+    try {
+      final response = await http.get(url);
 
-  // Fetch exercises for the user based on the UID
-  Future<void> _fetchExercises() async {
-    if (uid == null) {
-      print("UID is null, can't fetch exercises.");
-      return;
-    }
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body);
 
-    final response = await http.get(
-      Uri.parse('$baseUrl/chooses/exercises/$uid'),
-    );
+        setState(() {
+          uid = storedUid;
+          days = data["days"];
+          time = data["time"];
+        });
 
-    if (response.statusCode == 200) {
-      List<dynamic> fetchedExercises = json.decode(response.body);
-
-      // Group exercises by day
-      setState(() {
-        exercisesByDay = _groupExercisesByDay(fetchedExercises);
-        days = exercisesByDay.keys.toList(); // Extract the day keys (Day 1, Day 2, etc.)
-      });
-
-      print("Fetched exercises: $exercisesByDay");
-    } else {
-      print("Failed to fetch exercises.");
-    }
-  }
-
-  // Group exercises by day
-  Map<String, List<dynamic>> _groupExercisesByDay(List<dynamic> exercises) {
-    Map<String, List<dynamic>> groupedExercises = {};
-
-    for (var exercise in exercises) {
-      String dayKey = "Day ${exercise['day']}";  // Need to work with algorithm to separate exercises by day
-      if (!groupedExercises.containsKey(dayKey)) {
-        groupedExercises[dayKey] = [];
+        // Fetch relevant exercises after user info is retrieved
+        await _fetchExercises();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch user info.')),
+        );
       }
-      groupedExercises[dayKey]!.add(exercise);
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to load user info.')),
+      );
     }
-    return groupedExercises;
+  }
+
+  // Fetch exercises chosen for the user
+  Future<void> _fetchExercises() async {
+    if (uid == null) return;
+
+    final url = Uri.parse('$baseUrl/chooses/exercises/$uid');
+
+    try {
+      final response = await http.get(url);
+
+      if (response.statusCode == 200) {
+        final List<dynamic> fetchedExercises = json.decode(response.body);
+
+        setState(() {
+          exercises = List<String>.from(fetchedExercises.map((e) => e['exercise'].toString()));
+          _assignExercisesToDays();
+        });
+
+        print("Fetched exercises: $exercisesByDay");
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to fetch exercises')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to fetch exercises')),
+      );
+    }
+  }
+
+  // Determine the number of exercises per day based on time
+  int _getExercisesPerDay() {
+    if (time == "30-45 minutes") {
+      return 4;
+    } else if (time == "45-60 minutes") {
+      return 6;
+    } else if (time == "More than 1 hour") {
+      return 8;
+    }
+    return 4; // Default fallback
+  }
+
+  // Assign exercises to each day
+  void _assignExercisesToDays() {
+    int numExercises = _getExercisesPerDay();
+    exercisesByDay.clear();
+
+    for (int day = 1; day! <= days!; day++) {
+      int startIndex = (day - 1) * numExercises;
+      int endIndex = startIndex + numExercises;
+      exercisesByDay[day] = exercises.sublist(
+          startIndex, endIndex > exercises.length ? exercises.length : endIndex);
+    }
+
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Saved Data'),
-      ),
-      body: exercisesByDay.isEmpty
-          ? Center(child: CircularProgressIndicator()) // Loading indicator
+      appBar: AppBar(title: Text('Saved Data')),
+      body: days == null || exercisesByDay.isEmpty
+          ? Center(child: CircularProgressIndicator())
           : ListView.builder(
-        itemCount: days.length,
-        itemBuilder: (context, index) {
-          String day = days[index];
-          return ExpansionTile(
-            title: Text(day),
-            children: _buildExercisesForDay(day),
-          );
-        },
-      ),
+              itemCount: days!,
+              itemBuilder: (context, index) {
+                int day = index + 1;
+                return _buildExpansionTile(day);
+              },
+            ),
     );
   }
 
-  // Build a list of exercises for each day
-  List<Widget> _buildExercisesForDay(String day) {
-    List<dynamic> exercisesForDay = exercisesByDay[day] ?? [];
-    return exercisesForDay.map((exercise) {
-      return ListTile(
-        title: Text(exercise['exercise']),
-        subtitle: Text('Difficulty: ${exercise['difficulty_level']}'),
-      );
-    }).toList();
+  // Expandable tiles for each day
+  Widget _buildExpansionTile(int day) {
+    return Card(
+      elevation: 3,
+      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      child: ExpansionTile(
+        title: Text(
+          "Day $day",
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.deepPurple[400],
+          ),
+        ),
+        children: exercisesByDay[day]!.map((exercise) {
+          return ListTile(
+            title: Text(
+              exercise,
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.blue[900],
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
   }
 }

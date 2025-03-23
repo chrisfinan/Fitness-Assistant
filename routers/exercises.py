@@ -93,7 +93,6 @@ def get_max_exercises(time: str, days: int) -> int:
         raise HTTPException(status_code=400, detail="Invalid time duration")
     return time_mapping[time] * days
 
-
 @router.get("/by_info/{uid}", response_model=List[ExerciseResponse])
 async def get_exercises_by_info(
         uid: int,

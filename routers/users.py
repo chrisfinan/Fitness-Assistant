@@ -99,3 +99,36 @@ async def update_user(
     db.commit()
     db.refresh(user_to_update)
     return UserResponse.from_orm(user_to_update)
+
+@router.get("/{uid}", response_model=UserResponse)
+async def get_all_user_info_by_uid(uid: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.uid == uid).first()
+    if user is None:
+        raise HTTPException(status_code=404, detail=f"User {uid} not found")
+    return UserResponse.from_orm(user)
+
+@router.get("/user_info/{uid}")
+async def get_user_info(uid: int, db: Session = Depends(get_db)):
+    db_user = (
+        db.query(User, UserInformation, Choose)
+        .join(UserInformation, User.uid == UserInformation.uid, isouter=True)
+        .join(Choose, User.uid == Choose.uid, isouter=True)
+        .filter(User.uid == uid)
+        .first()
+    )
+
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user, information, choose = db_user  # Unpacking joined results
+
+    return {
+        "username": user.username,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+        "email_address": user.email_address,
+        "results": information.results if information else None,
+        "time": information.time if information else None,
+        "days": information.days if information else None,
+        "chosen_exercises": choose.eid if choose else None
+    }

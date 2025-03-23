@@ -44,11 +44,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    _fetchUsername();
+    _fetchUserData();
   }
 
-  Future<void> _fetchUsername() async {
-    final response = await authenticatedGetRequest("auth/me");
+  Future<void> _fetchUserData() async {
+    final response = await authenticatedGetRequest("auth/logged_in_user");
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body); // Convert JSON string to map
@@ -142,6 +142,6 @@ class _MyHomePageState extends State<MyHomePage> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Logged out failed!')),
     );
+    }
   }
-}
 }

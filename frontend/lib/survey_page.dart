@@ -28,8 +28,6 @@ class _SurveyPageState extends State<SurveyPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? storedUid = prefs.getInt('uid');
 
-    print("Fetched UID from SharedPreferences: $storedUid");  // Debugging
-
     setState(() {
       uid = storedUid;
     });

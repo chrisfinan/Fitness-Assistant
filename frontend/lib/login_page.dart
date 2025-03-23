@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    final String apiUrl = '$baseUrl/auth/login';  // Use baseUrl
+    final String apiUrl = '$baseUrl/auth/login';  // baseUrl from global_vars
 
     try {
       final response = await http.post(
@@ -38,7 +38,7 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);  // Decode response JSON
+        final data = jsonDecode(response.body);
         String? sessionToken = response.headers['set-cookie'];
 
         if (sessionToken != null) {
