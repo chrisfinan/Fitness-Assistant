@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    final String apiUrl = '$baseUrl/auth/login';  // baseUrl from global_vars
+    final String apiUrl = '$baseUrl/auth/login';
 
     try {
       final response = await http.post(
@@ -46,7 +46,6 @@ class _LoginPageState extends State<LoginPage> {
           await prefs.setString('session_token', sessionToken);
 
           if (data.containsKey("uid")) {
-            // Store user data in SharedPreferences
             await prefs.setInt('uid', data["uid"]);
             await prefs.setString('username', data["username"]);
             await prefs.setString('first_name', data["first_name"]);
@@ -82,50 +81,100 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Login")),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextField(
-                controller: _usernameController,
-                decoration: const InputDecoration(
-                  labelText: 'Username',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 15),
-              TextField(
-                controller: _passwordController,
-                decoration: const InputDecoration(
-                  labelText: 'Password',
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _loginUser,
-                child: const Text("Login"),
-              ),
-              const SizedBox(height: 10),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const RegistrationPage()),
-                  );
-                },
-                child: const Text(
-                  "Don't have an account? Create one here.",
-                  style: TextStyle(color: Colors.blue),
-                ),
-              ),
-            ],
+      body: Stack(
+        children: [
+          // Background Image
+          Positioned.fill(
+            child: Image.asset('assets/images/fitnestlogo.png',
+              fit: BoxFit.cover, // Cover entire screen
+            ),
           ),
-        ),
+
+          // Dark overlay for readability
+          Positioned.fill(
+            child: Container(
+              color: Colors.black.withOpacity(0.3), // Darken background slightly
+            ),
+          ),
+
+          // Login Content
+          SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(height: 100), // Spacer
+
+                  // App Title
+                  const Text(
+                    "Welcome!",
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white, // Make text visible on dark background
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Username Field
+                  TextField(
+                    controller: _usernameController,
+                    decoration: InputDecoration(
+                      labelText: 'Username',
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.8),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+
+                  const SizedBox(height: 15),
+
+                  // Password Field
+                  TextField(
+                    controller: _passwordController,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      filled: true,
+                      fillColor: Colors.white.withOpacity(0.8),
+                      border: OutlineInputBorder(),
+                    ),
+                    obscureText: true,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Login Button
+                  ElevatedButton(
+                    onPressed: _loginUser,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                      textStyle: const TextStyle(fontSize: 18),
+                    ),
+                    child: const Text("Login"),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  // Register Button
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const RegistrationPage()),
+                      );
+                    },
+                    child: const Text(
+                      "Don't have an account? Create one here.",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
