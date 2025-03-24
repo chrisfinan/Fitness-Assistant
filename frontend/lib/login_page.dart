@@ -83,10 +83,14 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // Background Image
-          Positioned.fill(
-            child: Image.asset('assets/images/fitnestlogo.png',
-              fit: BoxFit.cover, // Cover entire screen
+          // Full-screen Background Image
+          Align(
+            alignment: Alignment.topCenter, // Align image to the top of the screen
+            child: Image.asset(
+              'assets/images/fitnestlogo.png',
+              fit: BoxFit.cover, // Ensure the image covers the whole screen
+              height: MediaQuery.of(context).size.height, // Full screen height
+              width: MediaQuery.of(context).size.width, // Ensure the width is full
             ),
           ),
 
@@ -102,9 +106,9 @@ class _LoginPageState extends State<LoginPage> {
             child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 100), // Spacer
+                  const SizedBox(height: 200), // Spacer to push the form down below the image
 
                   // App Title
                   const Text(
@@ -149,8 +153,9 @@ class _LoginPageState extends State<LoginPage> {
                   ElevatedButton(
                     onPressed: _loginUser,
                     style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent, // Transparent background
                       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                      textStyle: const TextStyle(fontSize: 18),
+                      side: BorderSide(color: Colors.teal),
                     ),
                     child: const Text("Login"),
                   ),
