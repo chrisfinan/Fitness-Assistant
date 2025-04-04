@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
           seedColor: Colors.teal,
           primary: Colors.teal,
           secondary: Colors.deepOrangeAccent,
-          background: Colors.white,
+          surface: Colors.white,
         ),
         scaffoldBackgroundColor: Colors.white,
         textTheme: const TextTheme(
@@ -115,7 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       body: Container(
-        color: theme.colorScheme.background,
+        color: theme.colorScheme.surface,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -136,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
 
-            const SizedBox(height: 40), // Increased spacing here
+            const SizedBox(height: 40),
 
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -172,9 +172,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
             const Spacer(),
 
-            // Shifted image up slightly
             Padding(
-              padding: const EdgeInsets.only(bottom: 30.0), // Reduced bottom space
+              padding: const EdgeInsets.only(bottom: 30.0),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(20),
                 child: Image.asset(
