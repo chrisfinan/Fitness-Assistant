@@ -106,7 +106,7 @@ class _SavedDataPageState extends State<SavedDataPage> {
     int numExercises = _getExercisesPerDay();
     exercisesByDay.clear();
 
-    for (int day = 1; day! <= days!; day++) {
+    for (int day = 1; day <= days!; day++) {
       int startIndex = (day - 1) * numExercises;
       int endIndex = startIndex + numExercises;
       exercisesByDay[day] = exercises.sublist(
@@ -118,41 +118,46 @@ class _SavedDataPageState extends State<SavedDataPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text('Saved Data')),
+      appBar: AppBar(
+        title: const Text('Daily Workout Plans'),
+        backgroundColor: theme.colorScheme.primary,
+      ),
       body: days == null || exercisesByDay.isEmpty
           ? Center(child: CircularProgressIndicator())
           : ListView.builder(
-              itemCount: days!,
-              itemBuilder: (context, index) {
-                int day = index + 1;
-                return _buildExpansionTile(day);
-              },
-            ),
+        itemCount: days!,
+        itemBuilder: (context, index) {
+          int day = index + 1;
+          return _buildExpansionTile(day);
+        },
+      ),
     );
   }
 
   // Expandable tiles for each day
   Widget _buildExpansionTile(int day) {
+    final theme = Theme.of(context);
     return Card(
       elevation: 3,
-      margin: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      color: theme.colorScheme.surface,
       child: ExpansionTile(
         title: Text(
           "Day $day",
-          style: TextStyle(
+          style: theme.textTheme.titleLarge?.copyWith(
+            color: theme.colorScheme.secondary,
             fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.deepPurple[400],
           ),
         ),
         children: exercisesByDay[day]!.map((exercise) {
           return ListTile(
             title: Text(
               exercise,
-              style: TextStyle(
+              style: theme.textTheme.bodyMedium?.copyWith(
                 fontSize: 16,
-                color: Colors.blue[900],
+                color: theme.colorScheme.onSurface,
               ),
             ),
           );
