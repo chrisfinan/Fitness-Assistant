@@ -1,4 +1,3 @@
-// import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
@@ -33,28 +32,25 @@ class _SurveyPageState extends State<SurveyPage> {
     });
   }
 
-
   Future<void> _submitSurvey() async {
-  if (selectedGoal != null && selectedTime != null && selectedDays != null && uid != null) {
-
-    final response = await http.get(
-      Uri.parse('$baseUrl/exercises/by_info/$uid?results=$selectedGoal&time=$selectedTime&days=${int.parse(selectedDays!)}'),
-      headers: {"Content-Type": "application/json"},
-    );
-
-    if (response.statusCode == 200) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const SavedDataPage()),
+    if (selectedGoal != null && selectedTime != null && selectedDays != null && uid != null) {
+      final response = await http.get(
+        Uri.parse('$baseUrl/exercises/by_info/$uid?results=$selectedGoal&time=$selectedTime&days=${int.parse(selectedDays!)}'),
+        headers: {"Content-Type": "application/json"},
       );
-    } else {
-      _showErrorDialog("Failed to submit survey. Please try again.");
-    }
-  } else {
-    _showErrorDialog("Please enter all information.");
-  }
-}
 
+      if (response.statusCode == 200) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SavedDataPage()),
+        );
+      } else {
+        _showErrorDialog("Failed to submit survey. Please try again.");
+      }
+    } else {
+      _showErrorDialog("Please enter all information.");
+    }
+  }
 
   void _showErrorDialog(String message) {
     showDialog(
@@ -74,14 +70,28 @@ class _SurveyPageState extends State<SurveyPage> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text("Survey Page")),
+      appBar: AppBar(
+        backgroundColor: theme.colorScheme.primary,
+        title: const Text("Survey"),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("What are you primarily looking for in your results?"),
+            // Heading
+            Text(
+              "What are you primarily looking for in your results?",
+              style: theme.textTheme.headlineMedium?.copyWith(
+                color: theme.colorScheme.onBackground,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Dropdown for Goals
             DropdownButton<String>(
               value: selectedGoal,
               hint: const Text("Select an option"),
@@ -98,7 +108,16 @@ class _SurveyPageState extends State<SurveyPage> {
               },
             ),
             const SizedBox(height: 20),
-            const Text("How much time do you have to go to the gym per day?"),
+
+            // Dropdown for Time
+            Text(
+              "How much time do you have to go to the gym per day?",
+              style: theme.textTheme.headlineMedium?.copyWith(
+                color: theme.colorScheme.onBackground,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 10),
             DropdownButton<String>(
               value: selectedTime,
               hint: const Text("Select an option"),
@@ -115,7 +134,16 @@ class _SurveyPageState extends State<SurveyPage> {
               },
             ),
             const SizedBox(height: 20),
-            const Text("How many days per week do you have time to go to the gym?"),
+
+            // Dropdown for Days
+            Text(
+              "How many days per week do you have time to go to the gym?",
+              style: theme.textTheme.headlineMedium?.copyWith(
+                color: theme.colorScheme.onBackground,
+                fontSize: 18,
+              ),
+            ),
+            const SizedBox(height: 10),
             DropdownButton<String>(
               value: selectedDays,
               hint: const Text("Select an option"),
@@ -132,9 +160,19 @@ class _SurveyPageState extends State<SurveyPage> {
               },
             ),
             const SizedBox(height: 40),
+
+            // Submit Button
             Center(
               child: ElevatedButton(
                 onPressed: _submitSurvey,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepOrangeAccent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
                 child: const Text("Submit"),
               ),
             ),
