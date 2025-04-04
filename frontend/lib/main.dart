@@ -130,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Text(
-                "Welcome to FitNest. Our goal is to assist newcomers with their exercise journey! Please click the button below to fill out the survey with your workout goals. Your workout plan will be available upon submitting the survey.",
+                "Welcome to FitNest. Our goal is to assist newcomers with their exercise journey! Please click the button below to fill out the survey with your workout goals and time constraints. Your workout plan will be available upon submitting the survey.",
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodyMedium?.copyWith(fontSize: 16),
               ),
