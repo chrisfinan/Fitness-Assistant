@@ -17,9 +17,22 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Login App',
+      title: 'Home',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.teal,
+          primary: Colors.teal,
+          secondary: Colors.deepOrangeAccent,
+          background: Colors.white,
+        ),
+        scaffoldBackgroundColor: Colors.white,
+        textTheme: const TextTheme(
+          bodyMedium: TextStyle(color: Colors.black),
+          titleLarge: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       home: const LoginPage(),
     );
@@ -51,9 +64,8 @@ class _MyHomePageState extends State<MyHomePage> {
     final response = await authenticatedGetRequest("auth/logged_in_user");
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body); // Convert JSON string to map
+      final data = jsonDecode(response.body);
       setState(() {
-        // Extracts user data for UI, only username is displayed for now
         username = data["username"];
         first_name = data["first_name"];
         last_name = data["last_name"];
@@ -66,82 +78,117 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  Future<void> _logoutUser() async {
+    final response = await authenticatedGetRequest("auth/logout");
+
+    if (response.statusCode == 200) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.remove('session_token');
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginPage()),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Logged out successfully!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Logout failed!')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: theme.colorScheme.primary,
         title: const Text("Home"),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Logout',
+            icon: const Icon(Icons.logout, color: Colors.white),
             onPressed: _logoutUser,
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Container(
+        color: theme.colorScheme.background,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(
-              username,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
             const SizedBox(height: 20),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const SurveyPage()),
-                      );
-                    },
-                    child: const Text("Survey"),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const SavedDataPage()),
-                      );
-                    },
-                    child: const Text("Saved Data"),
-                  ),
-                ],
+
+            Text(
+              "Welcome, $first_name!",
+              style: theme.textTheme.titleLarge?.copyWith(fontSize: 24),
+            ),
+            const SizedBox(height: 10),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Text(
+                "Welcome to FitNest. Our goal is to assist newcomers with their exercise journey! Please click the button below to fill out the survey with your workout goals. Your workout plan will be available upon submitting the survey.",
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(fontSize: 16),
               ),
             ),
+
+            const SizedBox(height: 40), // Increased spacing here
+
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepOrangeAccent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SurveyPage()),
+                );
+              },
+              child: const Text("Exercise Goals Survey"),
+            ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.deepOrangeAccent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SavedDataPage()),
+                );
+              },
+              child: const Text("View Workout Plan"),
+            ),
+
+            const Spacer(),
+
+            // Shifted image up slightly
+            Padding(
+              padding: const EdgeInsets.only(bottom: 30.0), // Reduced bottom space
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.asset(
+                  'assets/images/barbellHeart.jpg',
+                  width: MediaQuery.of(context).size.width * 0.9,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> _logoutUser() async {
-  final response = await authenticatedGetRequest("auth/logout");
-
-  if (response.statusCode == 200) {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('session_token');
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()),
-    );
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Logged out successfully!')),
-    );
-  } else {
-    // Handle logout failure
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Logged out failed!')),
-    );
-    }
   }
 }
