@@ -85,7 +85,7 @@ class _SurveyPageState extends State<SurveyPage> {
             Text(
               "What are you primarily looking for in your results?",
               style: theme.textTheme.headlineMedium?.copyWith(
-                color: theme.colorScheme.onBackground,
+                color: theme.colorScheme.onSurface,
                 fontSize: 18,
               ),
             ),
@@ -113,7 +113,7 @@ class _SurveyPageState extends State<SurveyPage> {
             Text(
               "How much time do you have to go to the gym per day?",
               style: theme.textTheme.headlineMedium?.copyWith(
-                color: theme.colorScheme.onBackground,
+                color: theme.colorScheme.onSurface,
                 fontSize: 18,
               ),
             ),
@@ -139,7 +139,7 @@ class _SurveyPageState extends State<SurveyPage> {
             Text(
               "How many days per week do you have time to go to the gym?",
               style: theme.textTheme.headlineMedium?.copyWith(
-                color: theme.colorScheme.onBackground,
+                color: theme.colorScheme.onSurface,
                 fontSize: 18,
               ),
             ),
