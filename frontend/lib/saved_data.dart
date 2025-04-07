@@ -15,8 +15,23 @@ class _SavedDataPageState extends State<SavedDataPage> {
   int? uid;
   int? days;
   String time = "...";
-  List<String> exercises = [];
-  Map<int, List<String>> exercisesByDay = {}; // Stores exercises per day
+  List<Map<String, dynamic>> exercises = [];
+  Map<int, List<Map<String, dynamic>>> exercisesByDay = {};
+  Map<int, bool> checkedDays = {}; // Track checked off days
+  Map<int, Map<int, bool>> checkedExercises = {}; // Track checked off exercises for each day
+  Future<void> _loadCheckboxStates() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    for (int day = 1; day <= days!; day++) {
+      checkedDays[day] = prefs.getBool('checkedDay_$day') ?? false;
+
+      for (int exerciseIndex = 0; exerciseIndex < exercisesByDay[day]!.length; exerciseIndex++) {
+        checkedExercises[day]?[exerciseIndex] = prefs.getBool('checkedExercise_$day$exerciseIndex') ?? false;
+      }
+    }
+
+    setState(() {});
+  }
 
   @override
   void initState() {
@@ -24,7 +39,6 @@ class _SavedDataPageState extends State<SavedDataPage> {
     _fetchUserInfo();
   }
 
-  // Fetches relevant user info for this page
   Future<void> _fetchUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? storedUid = prefs.getInt('uid');
@@ -45,7 +59,6 @@ class _SavedDataPageState extends State<SavedDataPage> {
           time = data["time"];
         });
 
-        // Fetch relevant exercises after user info is retrieved
         await _fetchExercises();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -57,9 +70,11 @@ class _SavedDataPageState extends State<SavedDataPage> {
         SnackBar(content: Text('Failed to load user info.')),
       );
     }
+
+    await _loadCheckboxStates();
   }
 
-  // Fetch exercises chosen for the user
+
   Future<void> _fetchExercises() async {
     if (uid == null) return;
 
@@ -72,11 +87,9 @@ class _SavedDataPageState extends State<SavedDataPage> {
         final List<dynamic> fetchedExercises = json.decode(response.body);
 
         setState(() {
-          exercises = List<String>.from(fetchedExercises.map((e) => e['exercise'].toString()));
+          exercises = List<Map<String, dynamic>>.from(fetchedExercises);
           _assignExercisesToDays();
         });
-
-        print("Fetched exercises: $exercisesByDay");
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to fetch exercises')),
@@ -89,7 +102,6 @@ class _SavedDataPageState extends State<SavedDataPage> {
     }
   }
 
-  // Determine the number of exercises per day based on time
   int _getExercisesPerDay() {
     if (time == "30-45 minutes") {
       return 4;
@@ -98,22 +110,75 @@ class _SavedDataPageState extends State<SavedDataPage> {
     } else if (time == "More than 1 hour") {
       return 8;
     }
-    return 4; // Default fallback
+    return 4;
   }
 
-  // Assign exercises to each day
   void _assignExercisesToDays() {
     int numExercises = _getExercisesPerDay();
     exercisesByDay.clear();
+    checkedDays.clear();
+    checkedExercises.clear();
 
     for (int day = 1; day <= days!; day++) {
       int startIndex = (day - 1) * numExercises;
       int endIndex = startIndex + numExercises;
       exercisesByDay[day] = exercises.sublist(
-          startIndex, endIndex > exercises.length ? exercises.length : endIndex);
+        startIndex,
+        endIndex > exercises.length ? exercises.length : endIndex,
+      );
+
+      // Initialize checkbox state for each day
+      checkedDays[day] = false;
+
+      // Initialize checked state for exercises in each day
+      checkedExercises[day] = {};
+      for (int i = 0; i < exercisesByDay[day]!.length; i++) {
+        checkedExercises[day]![i] = false; // Initialize each exercise as unchecked
+      }
     }
 
     setState(() {});
+  }
+
+  Future<void> _saveCheckboxStates() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Save the checked days
+    for (int day = 1; day <= days!; day++) {
+      prefs.setBool('checkedDay_$day', checkedDays[day] ?? false);
+
+      // Save the checked exercises for each day
+      for (int exerciseIndex = 0; exerciseIndex < exercisesByDay[day]!.length; exerciseIndex++) {
+        prefs.setBool('checkedExercise_$day$exerciseIndex', checkedExercises[day]?[exerciseIndex] ?? false);
+      }
+    }
+  }
+
+
+  void _toggleCheckBox(int day) {
+    setState(() {
+      checkedDays[day] = !(checkedDays[day] ?? false);
+
+      if (checkedDays[day] == true) {
+        checkedExercises[day]?.forEach((key, value) {
+          checkedExercises[day]![key] = true;
+        });
+      } else {
+        checkedExercises[day]?.forEach((key, value) {
+          checkedExercises[day]![key] = false;
+        });
+      }
+    });
+
+    _saveCheckboxStates();
+  }
+
+  void _toggleExerciseCheckBox(int day, int exerciseIndex) {
+    setState(() {
+      checkedExercises[day]?[exerciseIndex] = !(checkedExercises[day]?[exerciseIndex] ?? false);
+    });
+
+    _saveCheckboxStates();
   }
 
   @override
@@ -127,16 +192,15 @@ class _SavedDataPageState extends State<SavedDataPage> {
       body: days == null || exercisesByDay.isEmpty
           ? Center(child: CircularProgressIndicator())
           : ListView.builder(
-        itemCount: days!,
-        itemBuilder: (context, index) {
-          int day = index + 1;
-          return _buildExpansionTile(day);
-        },
-      ),
+              itemCount: days!,
+              itemBuilder: (context, index) {
+                int day = index + 1;
+                return _buildExpansionTile(day);
+              },
+            ),
     );
   }
 
-  // Expandable tiles for each day
   Widget _buildExpansionTile(int day) {
     final theme = Theme.of(context);
     return Card(
@@ -144,20 +208,121 @@ class _SavedDataPageState extends State<SavedDataPage> {
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       color: theme.colorScheme.surface,
       child: ExpansionTile(
-        title: Text(
-          "Day $day",
-          style: theme.textTheme.titleLarge?.copyWith(
-            color: theme.colorScheme.secondary,
-            fontSize: 18,
-          ),
+        title: Row(
+          children: [
+            GestureDetector(
+              onTap: () => _toggleCheckBox(day),
+              child: Container(
+                padding: EdgeInsets.all(9),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: checkedDays[day] == true
+                        ? theme.colorScheme.secondary
+                        : theme.colorScheme.onSurface,
+                    width: 2,
+                  ),
+                ),
+                child: Center(
+                  child: checkedDays[day] == true
+                      ? Icon(Icons.check, color: theme.colorScheme.secondary, size: 17)
+                      : Icon(Icons.circle_outlined, color: theme.colorScheme.onSurface, size: 17),
+                ),
+              ),
+            ),
+            SizedBox(width: 8),
+            Text(
+              "Day $day",
+              style: TextStyle(
+                decoration: checkedDays[day] == true ? TextDecoration.lineThrough : null,
+                color: theme.colorScheme.secondary,
+                fontSize: 18,
+              ),
+            ),
+          ],
         ),
         children: exercisesByDay[day]!.map((exercise) {
-          return ListTile(
-            title: Text(
-              exercise,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontSize: 16,
-                color: theme.colorScheme.onSurface,
+          int exerciseIndex = exercisesByDay[day]!.indexOf(exercise);
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Card(
+              elevation: 2,
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              child: ExpansionTile(
+                title: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () => _toggleExerciseCheckBox(day, exerciseIndex),
+                      child: Container(
+                        padding: EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: checkedExercises[day]?[exerciseIndex] == true
+                                ? theme.colorScheme.secondary
+                                : theme.colorScheme.onSurface,
+                            width: 2,
+                          ),
+                        ),
+                        child: Center(
+                          child: checkedExercises[day]?[exerciseIndex] == true
+                              ? Icon(Icons.check, color: theme.colorScheme.secondary, size: 17)
+                              : Icon(Icons.circle_outlined, color: theme.colorScheme.onSurface, size: 17),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        exercise['exercise'],
+                        style: TextStyle(
+                          decoration: checkedExercises[day]?[exerciseIndex] == true
+                              ? TextDecoration.lineThrough
+                              : null,
+                          color: theme.colorScheme.onSurface,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                children: [
+                  if (exercise['target_muscle_group'] != null)
+                    ListTile(
+                      title: Text(
+                        "Target Muscle Group: ${exercise['target_muscle_group']}",
+                        style: theme.textTheme.bodySmall?.copyWith(fontSize: 15),
+                      ),
+                    ),
+                  if (exercise['body_region'] != null)
+                    ListTile(
+                      title: Text(
+                        "Body Region: ${exercise['body_region']}",
+                        style: theme.textTheme.bodySmall?.copyWith(fontSize: 15),
+                      ),
+                    ),
+                  if (exercise['force_type'] != null)
+                    ListTile(
+                      title: Text(
+                        "Force Type: ${exercise['force_type']}",
+                        style: theme.textTheme.bodySmall?.copyWith(fontSize: 15),
+                      ),
+                    ),
+                  if (exercise['primary_exercise_classification'] != null)
+                    ListTile(
+                      title: Text(
+                        "Primary Exercise Classification: ${exercise['primary_exercise_classification']}",
+                        style: theme.textTheme.bodySmall?.copyWith(fontSize: 15),
+                      ),
+                    ),
+                  if (exercise['setsxreps'] != null)
+                    ListTile(
+                      title: Text(
+                        "Sets x Reps: ${exercise['setsxreps']}",
+                        style: theme.textTheme.bodySmall?.copyWith(fontSize: 15),
+                      ),
+                    ),
+                ],
               ),
             ),
           );

@@ -17,6 +17,39 @@ class _RegistrationPageState extends State<RegistrationPage> {
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
 
+  bool _isPasswordValid = false;
+  bool _isPasswordTyped = false;
+  bool _isEmailValid = true;
+
+  // Password validation function
+  bool _validatePassword(String password) {
+    // Regex to check password criteria
+    final regex = RegExp(r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$');
+    return regex.hasMatch(password);
+  }
+
+  // Handle password input change
+  void _onPasswordChanged(String password) {
+    setState(() {
+      _isPasswordTyped = true;
+      _isPasswordValid = _validatePassword(password);
+    });
+  }
+
+  // Email validation
+  bool _validateEmail(String email) {
+    // Regex to check email with @ and .com after it
+    final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+    return regex.hasMatch(email) && email.endsWith('.com') && email.contains('@');
+  }
+
+  // Handle email input change
+  void _onEmailChanged(String email) {
+    setState(() {
+      _isEmailValid = _validateEmail(email);
+    });
+  }
+
   Future<void> _createUser() async {
     if (_usernameController.text.isEmpty ||
         _passwordController.text.isEmpty ||
@@ -58,65 +91,95 @@ class _RegistrationPageState extends State<RegistrationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create User')),
+      appBar: AppBar(title: Text('Create User')),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-                TextField(
-                  controller: _usernameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Username',
-                    border: OutlineInputBorder(),
+              TextField(
+                controller: _usernameController,
+                decoration: const InputDecoration(
+                  labelText: 'Username',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _passwordController,
+                decoration: const InputDecoration(
+                  labelText: 'Password',
+                  border: OutlineInputBorder(),
+                ),
+                obscureText: true,
+                onChanged: _onPasswordChanged,
+              ),
+              const SizedBox(height: 10),
+              // Password constraints text
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Password must contain:',
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
+                  const Text('• At least 8 characters'),
+                  const Text('• At least 1 capital letter'),
+                  const Text('• At least 1 lowercase letter'),
+                  const Text('• At least 1 number'),
+                  const Text('• At least 1 special character (e.g. @\$!%*?&)'),
+                  if (_isPasswordTyped && !_isPasswordValid)
+                    const Text(
+                      'Password does not meet the required criteria.',
+                      style: TextStyle(color: Colors.red),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _firstNameController,
+                decoration: const InputDecoration(
+                  labelText: 'First Name',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _passwordController,
-                  decoration: const InputDecoration(
-                    labelText: 'Password',
-                    border: OutlineInputBorder(),
-                  ),
-                  obscureText: true,
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _lastNameController,
+                decoration: const InputDecoration(
+                  labelText: 'Last Name',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _firstNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'First Name',
-                    border: OutlineInputBorder(),
-                  ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: _emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email Address',
+                  border: OutlineInputBorder(),
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _lastNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Last Name',
-                    border: OutlineInputBorder(),
-                  ),
+                onChanged: _onEmailChanged,
+              ),
+              const SizedBox(height: 10),
+              // Email validation message
+              if (!_isEmailValid)
+                const Text(
+                  'Please enter a valid email address.',
+                  style: TextStyle(color: Colors.red),
                 ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: _emailController,
-                  decoration: const InputDecoration(
-                    labelText: 'Email Address',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: _createUser,
-                  child: const Text('Create Account'),
-                ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Back'),
-                ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _isPasswordValid && _isEmailValid ? _createUser : null, // Disable button if password or email is invalid
+                child: const Text('Create Account'),
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Back'),
+              ),
             ],
           ),
         ),

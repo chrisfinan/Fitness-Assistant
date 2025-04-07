@@ -50,7 +50,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   String username = "...";
-  String first_name = "";
+  String first_name = "...";
   String last_name = "...";
   String email_address = "...";
 
@@ -103,6 +103,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: theme.colorScheme.primary,
@@ -120,13 +121,11 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 20),
-
             Text(
-              "Welcome, $first_name!",
+              "Welcome, $username!",
               style: theme.textTheme.titleLarge?.copyWith(fontSize: 24),
             ),
             const SizedBox(height: 10),
-
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Text(
@@ -135,9 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 style: theme.textTheme.bodyMedium?.copyWith(fontSize: 16),
               ),
             ),
-
             const SizedBox(height: 40),
-
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepOrangeAccent,
@@ -152,9 +149,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: const Text("Exercise Goals Survey"),
             ),
-
             const SizedBox(height: 20),
-
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepOrangeAccent,
@@ -169,9 +164,7 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: const Text("View Workout Plan"),
             ),
-
             const Spacer(),
-
             Padding(
               padding: const EdgeInsets.only(bottom: 30.0),
               child: ClipRRect(
@@ -183,7 +176,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
-
             const SizedBox(height: 20),
           ],
         ),
