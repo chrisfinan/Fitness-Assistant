@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'global_vars.dart';
+import 'survey_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SavedDataPage extends StatefulWidget {
@@ -17,8 +18,9 @@ class _SavedDataPageState extends State<SavedDataPage> {
   String time = "...";
   List<Map<String, dynamic>> exercises = [];
   Map<int, List<Map<String, dynamic>>> exercisesByDay = {};
-  Map<int, bool> checkedDays = {}; // Track checked off days
-  Map<int, Map<int, bool>> checkedExercises = {}; // Track checked off exercises for each day
+  Map<int, bool> checkedDays = {};
+  Map<int, Map<int, bool>> checkedExercises = {};
+
   Future<void> _loadCheckboxStates() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -74,7 +76,6 @@ class _SavedDataPageState extends State<SavedDataPage> {
     await _loadCheckboxStates();
   }
 
-
   Future<void> _fetchExercises() async {
     if (uid == null) return;
 
@@ -127,13 +128,11 @@ class _SavedDataPageState extends State<SavedDataPage> {
         endIndex > exercises.length ? exercises.length : endIndex,
       );
 
-      // Initialize checkbox state for each day
       checkedDays[day] = false;
 
-      // Initialize checked state for exercises in each day
       checkedExercises[day] = {};
       for (int i = 0; i < exercisesByDay[day]!.length; i++) {
-        checkedExercises[day]![i] = false; // Initialize each exercise as unchecked
+        checkedExercises[day]![i] = false;
       }
     }
 
@@ -141,19 +140,16 @@ class _SavedDataPageState extends State<SavedDataPage> {
   }
 
   Future<void> _saveCheckboxStates() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    // Save the checked days
     for (int day = 1; day <= days!; day++) {
       prefs.setBool('checkedDay_$day', checkedDays[day] ?? false);
 
-      // Save the checked exercises for each day
       for (int exerciseIndex = 0; exerciseIndex < exercisesByDay[day]!.length; exerciseIndex++) {
         prefs.setBool('checkedExercise_$day$exerciseIndex', checkedExercises[day]?[exerciseIndex] ?? false);
       }
     }
   }
-
 
   void _toggleCheckBox(int day) {
     setState(() {
@@ -189,15 +185,54 @@ class _SavedDataPageState extends State<SavedDataPage> {
         title: const Text('Daily Workout Plans'),
         backgroundColor: theme.colorScheme.primary,
       ),
-      body: days == null || exercisesByDay.isEmpty
+      body: days == null
+          ? Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.info_outline, size: 48, color: theme.colorScheme.secondary),
+              const SizedBox(height: 20),
+              Text(
+                "You have not filled out the survey yet.\n\nPlease answer a few questions by pressing the button below so a personalized workout can be generated for you!",
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyLarge?.copyWith(fontSize: 16),
+              ),
+              const SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const SurveyPage()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.deepOrangeAccent,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: const Text(
+                  "Go to Survey",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      )
+          : exercisesByDay.isEmpty
           ? Center(child: CircularProgressIndicator())
           : ListView.builder(
-              itemCount: days!,
-              itemBuilder: (context, index) {
-                int day = index + 1;
-                return _buildExpansionTile(day);
-              },
-            ),
+        itemCount: days!,
+        itemBuilder: (context, index) {
+          int day = index + 1;
+          return _buildExpansionTile(day);
+        },
+      ),
     );
   }
 
