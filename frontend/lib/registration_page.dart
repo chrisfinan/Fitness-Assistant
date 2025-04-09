@@ -62,7 +62,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
 
   bool _validateEmail(String email) {
     final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
-    return regex.hasMatch(email) && email.endsWith('.com');
+    return regex.hasMatch(email) && (email.endsWith('.com') || email.endsWith('.edu') || email.endsWith('.org') || email.endsWith('.net'));
   }
 
   void _onEmailChanged(String email) {
