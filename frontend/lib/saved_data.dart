@@ -41,6 +41,19 @@ class _SavedDataPageState extends State<SavedDataPage> {
     _fetchUserInfo();
   }
 
+  Future<void> _clearCheckboxStates() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    // Clear all the previous checked days and exercises
+    for (int day = 1; day <= (days ?? 7); day++) {  // you can assume max 7 days or use old value
+      prefs.remove('checkedDay_$day');
+
+      for (int i = 0; i < 10; i++) {  // assume max 10 exercises per day for now
+        prefs.remove('checkedExercise_${day}${i}');
+      }
+    }
+  }
+
   Future<void> _fetchUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? storedUid = prefs.getInt('uid');
@@ -61,6 +74,9 @@ class _SavedDataPageState extends State<SavedDataPage> {
           time = data["time"];
         });
 
+        // Reset any leftover checked boxes for days or exercises
+        await _clearCheckboxStates();
+
         await _fetchExercises();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -75,6 +91,7 @@ class _SavedDataPageState extends State<SavedDataPage> {
 
     await _loadCheckboxStates();
   }
+
 
   Future<void> _fetchExercises() async {
     if (uid == null) return;

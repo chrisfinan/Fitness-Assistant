@@ -3,9 +3,9 @@ from fastapi import FastAPI, HTTPException, Depends, APIRouter
 from app.models import Base, Exercise, UserInformation, Choose, User
 from schemas.exercise import ExerciseResponse, ExerciseCreate, ExerciseUpdate
 from typing import List
-from operator import or_
 from random import random
 import random
+from sqlalchemy import and_, or_
 from app.db import get_db
 
 router = APIRouter()
@@ -79,113 +79,140 @@ async def update_exercise(eid: int, exercise_data: ExerciseUpdate, db: Session =
     else:
         raise HTTPException(status_code=404, detail=f"Exercise with ID {eid} not found")
 
-
-# Helper function to get max number of exercises based on time and days
-def get_max_exercises(time: str, days: int) -> int:
+# Helper function to map time to a number
+def get_time_value(time: str) -> int:
     time_mapping = {
         "30-45 minutes": 4,
         "45-60 minutes": 6,
         "More than 1 hour": 8
     }
-
-    # Validate time
     if time not in time_mapping:
         raise HTTPException(status_code=400, detail="Invalid time duration")
-    return time_mapping[time] * days
+    return time_mapping[time]
 
 @router.get("/by_info/{uid}", response_model=List[ExerciseResponse])
 async def get_exercises_by_info(
-        uid: int,
-        results: str,
-        time: str,
-        days: int,
-        db: Session = Depends(get_db)
+    uid: int,
+    results: str,
+    time: str,
+    days: int,
+    db: Session = Depends(get_db)
 ):
-    # Validate that the uid exists
+    # Validate uid
     user = db.query(User).filter(User.uid == uid).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
     # Update or insert user information
-    information_to_update = db.query(UserInformation).filter(UserInformation.uid == uid).first()
-
-    if information_to_update:
-        # Update existing record
-        information_to_update.results = results
-        information_to_update.time = time
-        information_to_update.days = days
+    information = db.query(UserInformation).filter(UserInformation.uid == uid).first()
+    if information:
+        information.results = results
+        information.time = time
+        information.days = days
     else:
-        # Create new record if not found
-        information_to_update = UserInformation(
-            uid=uid,
-            results=results,
-            time=time,
-            days=days,
-            weight_goal=None,
-            level=None
-        )
-        db.add(information_to_update)
+        information = UserInformation(uid=uid, results=results, time=time, days=days, weight_goal=None, level=None)
+        db.add(information)
 
     db.commit()
-    db.refresh(information_to_update)
+    db.refresh(information)
 
-    # Define PEC mapping
+    # PEC Mapping
     pec_mapping = {
         "Strength": ['Powerlifting', 'Ballistics', 'Mobility'],
         "Aesthetics": ['Bodybuilding'],
         "Endurance": ['Calisthenics', 'Grinds', 'Bodybuilding']
     }
-
     if results not in pec_mapping:
-        raise HTTPException(status_code=400,
-                            detail="Invalid results type. Choose from Strength, Aesthetics, or Endurance")
+        raise HTTPException(status_code=400, detail="Invalid results type. Choose from Strength, Aesthetics, or Endurance")
 
     if days not in range(1, 7):
         raise HTTPException(status_code=400, detail="Days must be between 1 and 6")
 
-    max_exercises = get_max_exercises(time, days)
+    time_value = get_time_value(time)
+    max_exercises = days * time_value
 
-    # Query all exercises filtering by results
-    exercises = (
-        db.query(Exercise)
-        .filter(Exercise.primary_exercise_classification.in_(pec_mapping[results]))
-    )
+    # Define condition groups
+    condition_groups = []
 
-    # Apply day-based filters
-    if days in [3, 6]:
-        exercises = exercises.filter(
-            or_(
-                Exercise.force_type.in_(["Push", "Pull"]),
-                Exercise.body_region == "Lower Body"
+    if days == 6 or days == 3:
+        condition_groups = [
+            {"force_type": "Push", "body_region": "Upper Body"},
+            {"force_type": "Pull", "body_region": "Upper Body"},
+            {"body_region": "Lower Body"}
+        ]
+    elif days == 5:
+        condition_groups = [
+            {"target_muscle_group": ["Chest", "Triceps"]},
+            {"target_muscle_group": ["Back", "Biceps"]},
+            {"target_muscle_group": ["Shoulders", "Trapezius", "Forearms"]},
+            {"target_muscle_group": ["Quadriceps", "Adductors", "Abdominals"]},
+            {"target_muscle_group": ["Glutes", "Hamstrings", "Abductors"]}
+        ]
+    elif days == 4:
+        condition_groups = [
+            {"target_muscle_group": ["Chest", "Triceps"]},
+            {"target_muscle_group": ["Back", "Biceps", "Abdominals"]},
+            {"target_muscle_group": ["Shoulders", "Trapezius", "Forearms"]},
+            {"target_muscle_group": ["Quadriceps", "Glutes", "Hamstrings"]}
+        ]
+    elif days in [2, 1]:
+        condition_groups = [
+            {"body_region": ["Upper Body", "Lower Body", "Midsection"]}
+        ]
+
+    selected_exercises = []
+
+    for group in condition_groups:
+        query = db.query(Exercise).filter(
+            Exercise.primary_exercise_classification.in_(pec_mapping[results])
+        )
+
+        if "force_type" in group and "body_region" in group:
+            query = query.filter(
+                Exercise.force_type == group["force_type"],
+                Exercise.body_region == group["body_region"]
             )
-        )
-    elif days in [4, 5]:
-        exercises = exercises.filter(
-            Exercise.target_muscle_group.in_([
-                "Chest", "Triceps", "Back", "Biceps", "Shoulders", "Trapezius", "Forearms",
-                "Quadriceps", "Adductors", "Abdominals", "Glutes", "Hamstrings", "Abductors"
-            ])
-        )
-    elif days in [1, 2]:
-        exercises = exercises.filter(
-            Exercise.body_region.in_(["Upper Body", "Lower Body", "Midsection"])
-        )
+        elif "target_muscle_group" in group:
+            query = query.filter(
+                Exercise.target_muscle_group.in_(group["target_muscle_group"])
+            )
+        elif "body_region" in group:
+            body_regions = group["body_region"]
+            if isinstance(body_regions, str):
+                body_regions = [body_regions]
 
-    exercises = exercises.all()
+            query = db.query(Exercise).filter(
+                Exercise.body_region.in_(body_regions)
+            )
+        exercises = query.all()
 
-    if not exercises:
-        raise HTTPException(status_code=404, detail="No exercises found")
+        if not exercises:
+            continue
 
-    # Randomly filter exercises down to max_exercises limit
-    selected_exercises = random.sample(exercises, min(len(exercises), max_exercises))
+        if days == 6:
+            number_to_select = time_value * 2
+        else:
+            number_to_select = time_value
 
-    # Delete existing entries in Choose table for user entered
+        selected = random.sample(exercises, min(len(exercises), number_to_select))
+        selected_exercises.extend(selected)
+
+    # Check if we need more exercises
+    if len(selected_exercises) < max_exercises:
+        remaining = max_exercises - len(selected_exercises)
+        all_exercises = db.query(Exercise).filter(
+            Exercise.primary_exercise_classification.in_(pec_mapping[results])
+        ).all()
+        selected_exercises.extend(random.sample(all_exercises, min(len(all_exercises), remaining)))
+
+    # Trim to exactly max_exercises if overshooting
+    selected_exercises = selected_exercises[:max_exercises]
+
+    # Update Choose table
     db.query(Choose).filter(Choose.uid == uid).delete()
 
-    # Insert new selected exercises into Choose table for this user
     new_entries = [Choose(uid=uid, eid=exercise.eid) for exercise in selected_exercises]
     db.bulk_save_objects(new_entries)
-
-    db.commit()  # Commit transaction to apply changes
+    db.commit()
 
     return [ExerciseResponse.from_orm(exercise) for exercise in selected_exercises]
