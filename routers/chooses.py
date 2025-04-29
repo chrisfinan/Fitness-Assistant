@@ -22,11 +22,11 @@ async def list_users(skip: int = 0, limit: int = 10, db: Session = Depends(get_d
 async def update_user(
     uid: int, choose_data: ChooseUpdate, db: Session = Depends(get_db)
 ):
-    # Retrieve the User object by its ID
+    # Get user with id
     choose_to_update = db.query(Choose).filter(Choose.uid == uid).first()
 
     if choose_to_update:
-        # Update the User object with the new data
+        # Update user info
         for field, value in choose_data.dict().items():
             setattr(choose_to_update, field, value)
 

@@ -30,6 +30,7 @@ async def login(user: UserLogin, response: Response, db: Session = Depends(get_d
     # Set session in cookies
     response.set_cookie(key="session_token", value=session_token, httponly=True)
 
+    # Return user data
     return {
         "message": "Login successful!",
         "uid": db_user.uid,

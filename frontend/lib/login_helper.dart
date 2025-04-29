@@ -6,10 +6,11 @@ Future<http.Response> authenticatedGetRequest(String endpoint) async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? sessionToken = prefs.getString('session_token');
 
+  // Attach session token
   final response = await http.get(
     Uri.parse('$baseUrl/$endpoint'),
     headers: {
-      'Cookie': sessionToken ?? '', // Attach session token
+      'Cookie': sessionToken ?? '',
       'Content-Type': 'application/json',
     },
   );

@@ -21,6 +21,7 @@ class _SavedDataPageState extends State<SavedDataPage> {
   Map<int, bool> checkedDays = {};
   Map<int, Map<int, bool>> checkedExercises = {};
 
+  // Load checked boxes
   Future<void> _loadCheckboxStates() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -45,15 +46,16 @@ class _SavedDataPageState extends State<SavedDataPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
     // Clear all the previous checked days and exercises
-    for (int day = 1; day <= (days ?? 7); day++) {  // you can assume max 7 days or use old value
+    for (int day = 1; day <= (days ?? 7); day++) {
       prefs.remove('checkedDay_$day');
 
-      for (int i = 0; i < 10; i++) {  // assume max 10 exercises per day for now
-        prefs.remove('checkedExercise_${day}${i}');
+      for (int i = 0; i < 10; i++) {  // Assumed max 10 exercises per day
+        prefs.remove('checkedExercise_$day$i');
       }
     }
   }
 
+  // Get user survey info with stored uid
   Future<void> _fetchUserInfo() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? storedUid = prefs.getInt('uid');
@@ -92,7 +94,7 @@ class _SavedDataPageState extends State<SavedDataPage> {
     await _loadCheckboxStates();
   }
 
-
+  // Get exercises user has
   Future<void> _fetchExercises() async {
     if (uid == null) return;
 
@@ -120,6 +122,7 @@ class _SavedDataPageState extends State<SavedDataPage> {
     }
   }
 
+  // Determine how many exercises displayed per day
   int _getExercisesPerDay() {
     if (time == "30-45 minutes") {
       return 4;
@@ -131,6 +134,7 @@ class _SavedDataPageState extends State<SavedDataPage> {
     return 4;
   }
 
+  // Assign exercises to days
   void _assignExercisesToDays() {
     int numExercises = _getExercisesPerDay();
     exercisesByDay.clear();
@@ -156,6 +160,7 @@ class _SavedDataPageState extends State<SavedDataPage> {
     setState(() {});
   }
 
+  // Save checked boxes
   Future<void> _saveCheckboxStates() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -168,6 +173,7 @@ class _SavedDataPageState extends State<SavedDataPage> {
     }
   }
 
+  // Check box function (days)
   void _toggleCheckBox(int day) {
     setState(() {
       checkedDays[day] = !(checkedDays[day] ?? false);
@@ -186,6 +192,7 @@ class _SavedDataPageState extends State<SavedDataPage> {
     _saveCheckboxStates();
   }
 
+  // Check box function (exercises)
   void _toggleExerciseCheckBox(int day, int exerciseIndex) {
     setState(() {
       checkedExercises[day]?[exerciseIndex] = !(checkedExercises[day]?[exerciseIndex] ?? false);

@@ -21,7 +21,7 @@ async def list_information(skip: int = 0, limit: int = 10, db: Session = Depends
 
 @router.delete("/{uid}", response_model=str)
 async def delete_information(uid: int, db: Session = Depends(get_db)):
-    # Retrieve the User object by its ID
+    # Get uid
     information_to_delete = db.query(UserInformation).filter(UserInformation.uid == uid).first()
 
     if information_to_delete:
@@ -30,7 +30,6 @@ async def delete_information(uid: int, db: Session = Depends(get_db)):
             if column.name != "uid":
                 setattr(information_to_delete, column.name, None)
 
-        # Commit the changes to update the record
         db.commit()
         return f"User {uid} successfully updated with all fields set to null except uid."
     else:
@@ -40,11 +39,11 @@ async def delete_information(uid: int, db: Session = Depends(get_db)):
 async def update_information(
     uid: int, userInformation_data: InformationUpdate, db: Session = Depends(get_db)
 ):
-    # Retrieve the User object by its ID
+    # Get uid
     information_to_update = db.query(UserInformation).filter(UserInformation.uid == uid).first()
 
     if information_to_update:
-        # Update the User object with the new data
+        # Update user survey information
         for field, value in userInformation_data.dict().items():
             setattr(information_to_update, field, value)
 

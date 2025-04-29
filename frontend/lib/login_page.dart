@@ -20,11 +20,13 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _loginUser() async {
     if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
+        // Check for all fields filled
         const SnackBar(content: Text('Please fill out all fields!')),
       );
       return;
     }
 
+    // Call auth router
     final String apiUrl = '$baseUrl/auth/login';
 
     try {
@@ -45,6 +47,7 @@ class _LoginPageState extends State<LoginPage> {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('session_token', sessionToken);
 
+          // Set user logged in
           if (data.containsKey("uid")) {
             await prefs.setInt('uid', data["uid"]);
             await prefs.setString('username', data["username"]);
@@ -85,19 +88,19 @@ class _LoginPageState extends State<LoginPage> {
         children: [
           // Full-screen Background Image
           Align(
-            alignment: Alignment.topCenter, // Align image to the top of the screen
+            alignment: Alignment.topCenter,
             child: Image.asset(
               'assets/images/fitnestlogo.png',
-              fit: BoxFit.cover, // Ensure the image covers the whole screen
-              height: MediaQuery.of(context).size.height, // Full screen height
-              width: MediaQuery.of(context).size.width, // Ensure the width is full
+              fit: BoxFit.cover,
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
             ),
           ),
 
           // Dark overlay for readability
           Positioned.fill(
             child: Container(
-              color: Colors.black.withOpacity(0.3), // Darken background slightly
+              color: Colors.black.withOpacity(0.3),
             ),
           ),
 
@@ -108,7 +111,8 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 200), // Spacer to push the form down below the image
+                  // Spacer to push the form down below the image
+                  const SizedBox(height: 200),
 
                   // App Title
                   const Text(
@@ -116,7 +120,8 @@ class _LoginPageState extends State<LoginPage> {
                     style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white, // Make text visible on dark background
+                      // Make text visible on dark background
+                      color: Colors.white,
                     ),
                   ),
 
@@ -153,7 +158,7 @@ class _LoginPageState extends State<LoginPage> {
                   ElevatedButton(
                     onPressed: _loginUser,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent, // Transparent background
+                      backgroundColor: Colors.transparent,
                       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                       side: BorderSide(color: Colors.teal),
                     ),

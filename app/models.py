@@ -60,11 +60,11 @@ class Choose(Base):
     uid = Column(Integer, ForeignKey('users.uid', ondelete='CASCADE'), primary_key=True)
     eid = Column(Integer, ForeignKey('functionalfitnessdatabase.eid', ondelete='CASCADE'), primary_key=True)
 
-    # Relationships
+    # Foreign key relationships
     user = relationship('User', backref='chooses', foreign_keys=[uid])
     exercise = relationship('Exercise', backref='choose', foreign_keys=[eid])
 
-    # Unique constraint for the combination of uid and eid (optional, since it's already a primary key)
+    # Unique constraint for the combination of uid and eid
     __table_args__ = (
         UniqueConstraint('uid', 'eid', name='_uid_eid_uc'),
     )

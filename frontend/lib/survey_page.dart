@@ -23,6 +23,7 @@ class _SurveyPageState extends State<SurveyPage> {
     _fetchUserID();
   }
 
+  // Get user id in the session
   Future<void> _fetchUserID() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int? storedUid = prefs.getInt('uid');
@@ -32,6 +33,7 @@ class _SurveyPageState extends State<SurveyPage> {
     });
   }
 
+  // Call exercise selection router
   Future<void> _submitSurvey() async {
     if (selectedGoal != null && selectedTime != null && selectedDays != null && uid != null) {
       final response = await http.get(

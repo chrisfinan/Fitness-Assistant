@@ -35,12 +35,12 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
         email_address=user.email_address,
     )
 
-    # If a username is already taken (username must be unique)
+    # If username is already taken (username must be unique)
     existing_user = db.query(User).filter(User.username == user.username).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Username already taken")
 
-    # Add new user and commit to get the UID
+    # Add new user and commit to get the uid
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -50,7 +50,6 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
         uid=new_user.uid,
     )
 
-    # Add new information record and commit
     db.add(new_information)
     db.commit()
 
@@ -59,7 +58,7 @@ async def create_user(user: UserCreate, db: Session = Depends(get_db)):
 
 @router.delete("/{uid}", response_model=str)
 async def delete_user(uid: int, db: Session = Depends(get_db)):
-    # Retrieve the User object by its ID
+    # Get uid
     user_to_delete = db.query(User).filter(User.uid == uid).first()
 
     if user_to_delete:
@@ -69,10 +68,10 @@ async def delete_user(uid: int, db: Session = Depends(get_db)):
         # Delete all related rows in the Choose table
         db.query(Choose).filter(Choose.uid == uid).delete()
 
-        # Delete the User object
+        # Delete the user in the Users table
         db.delete(user_to_delete)
 
-        # Commit the changes to the database
+        # Commit all changes to the database
         db.commit()
 
         return f"User {uid} and all associated information successfully deleted."
@@ -83,17 +82,17 @@ async def delete_user(uid: int, db: Session = Depends(get_db)):
 async def update_user(
     uid: int, user_data: UserUpdate, db: Session = Depends(get_db)
 ):
-    # Retrieve the User object by its ID
+    # Get uid
     user_to_update = db.query(User).filter(User.uid == uid).first()
 
     if not user_to_update:
         raise HTTPException(status_code=404, detail=f"User with ID {uid} not found")
 
-    # Update fields dynamically, but hash the password if it's being updated
+    # Update fields, hash password if its being updated
     for field, value in user_data.dict().items():
-        if field == "password" and value:  # Ensure password is not empty before hashing
+        if field == "password" and value: # Ensure password is not empty
             setattr(user_to_update, field, hash_password(value))
-        elif value is not None:  # Only update fields that are provided
+        elif value is not None:  # Only update fields provided
             setattr(user_to_update, field, value)
 
     db.commit()
@@ -120,7 +119,8 @@ async def get_user_info(uid: int, db: Session = Depends(get_db)):
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    user, information, choose = db_user  # Unpacking joined results
+    # Unpack joined results
+    user, information, choose = db_user
 
     return {
         "username": user.username,

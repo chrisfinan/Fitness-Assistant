@@ -3,5 +3,5 @@ DB_USER = "postgres"
 DB_NAME = "Fitness_AssistantDB"
 DB_HOST = "localhost"
 
-# start fastapi server:
+# To start fastapi server:
 # uvicorn app.main:app --host <IP> --port 8000

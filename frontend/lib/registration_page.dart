@@ -33,6 +33,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     return regex.hasMatch(password);
   }
 
+  // Password strength function
   void _onPasswordChanged(String password) {
     setState(() {
       _isPasswordTyped = password.isNotEmpty;
@@ -54,12 +55,14 @@ class _RegistrationPageState extends State<RegistrationPage> {
     });
   }
 
+  // Password confirmation function
   void _onConfirmPasswordChanged(String confirmPassword) {
     setState(() {
       _doPasswordsMatch = confirmPassword == _passwordController.text;
     });
   }
 
+  // Email validation function
   bool _validateEmail(String email) {
     final regex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
     return regex.hasMatch(email) && (email.endsWith('.com') || email.endsWith('.edu') || email.endsWith('.org') || email.endsWith('.net'));
@@ -71,6 +74,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     });
   }
 
+  // Strength bar function
   Color _getStrengthColor() {
     if (_passwordStrength <= 0.25) return Colors.red;
     if (_passwordStrength <= 0.5) return Colors.orange;
@@ -78,6 +82,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
     return Colors.green;
   }
 
+  // Create user function after valid info is entered
   Future<void> _createUser() async {
     if (_usernameController.text.isEmpty ||
         _passwordController.text.isEmpty ||
@@ -166,7 +171,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
                 ),
               const SizedBox(height: 20),
 
-              // Username section (now above the password fields)
+              // Username section
               TextField(
                 controller: _usernameController,
                 decoration: const InputDecoration(
